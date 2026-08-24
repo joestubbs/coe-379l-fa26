@@ -302,9 +302,21 @@ when it became apparent that there were many applications to software and hardwa
 
 We can think of FM as involving three components: 
 
-1. *Specification* -- mathematical definition of what should be true (e.g., what the system should do)
-2. *Mathematical model* –- The actual code, hardware design, protocol, etc., translated into mathematical logic. 
-3. *Formal verification* -– Automated tools (model checkers, provers, solvers) that mathematically prove that the model always satisfied the specification. 
+1. *Specification* --- mathematical definition of what should be true (e.g., what the system should do)
+2. *Mathematical model* --- The actual code, hardware design, protocol, etc., translated into mathematical logic. 
+3. *Formal verification* --- Automated and interactive tools (model checkers, solvers, provers) that 
+   mathematically prove that the model always satisfied the specification. 
+
+How do computer programs verify mathematical theorems? A key insight is the Curry-Howard Isomorphism
+or Curry-Howard Correspondence, which establishes a direct connection between mathematical logic 
+and typed functional programming languages. Specifically, Curry-Howard establishes the following:
+
+* Propositions are types --- Propositional statements (or theorem statements) are equivalent to types 
+  in a functional programming language.
+* Proofs are progrmans --- constructing a proof of a propositional statement is equivalent to constructing 
+  a program that inhabits the type (corresponding to the statement). 
+* Verification is type checking --- Checking whether a proof is correct is equivalent to checking 
+  whether a program (the proof) has the correct type (the proposition). 
 
 As mentioned, FM has enjoyed has enjoyed its own renaissance over the last decade thanks in large part to two 
 major efforts. First, the formalization of theoretical disciplines including mathematics surged in popularity 
@@ -370,7 +382,7 @@ logging into the TACC User portal: https://portal.tacc.utexas.edu/
 
 2. Add your TACC account username to the Google doc spreadsheet shared in class. 
 
-3. Send an email to myself, Anagha, Walter, and Sichang. (See email addresses above)
+3. Send an email to myself, Anagha, Walter, and Sichang. (Email addresses are listed below)
    Include the following:
 
 .. code-block:: bash 
@@ -387,10 +399,25 @@ logging into the TACC User portal: https://portal.tacc.utexas.edu/
 
 We will have VMs created for each person enrolled. 
 
-**Future Classes**
+For Next Class and Future Classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Bring your laptop computer to class for each lecture. Next time, we will make sure everyone can connect to their 
-student VM. 
+When showing code, I will be using the
+VSCode IDE in class (we used this in 332 last Spring). We recommend you install VSCode on your 
+laptop and use the RemoteSSH extension. 
+
+Here are instructions for installing VSCode: 
+
+ * Linux -- Follow the instructions `here. <https://code.visualstudio.com/docs/setup/linux>`_
+ * Mac -- Follow the instructions `here. <https://code.visualstudio.com/docs/setup/mac>`_
+ * Windows -- Follow the instructions `here. <https://code.visualstudio.com/docs/setup/windows>`_
+
+Note that you only need to follow the first step to install the actual VSCode application. 
+Then, install the RemoteSSH (from Microsoft) extension.        
+
+Bring your laptop computer to class for each lecture. 
+
+Next time, we will make sure everyone can connect to their student VM. 
 
 
 Student Responses: Goals for the Course 
