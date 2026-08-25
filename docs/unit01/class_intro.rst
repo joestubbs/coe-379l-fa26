@@ -374,6 +374,10 @@ Part 3: Patterns and Architecture for Neurosymbolic Systems
 * Week of Nov 23 -- **Thanksgiving Break, no class this week**
 * Week 14 (Dec 1, 3): Special topics, including Retrieval for Lean libraries; Tactic programming and other metaprogramming in Lean; More on formally verified mathematics or other topics. 
 
+
+Active TACC Account Required 
+----------------------------- 
+
 **Before We Leave Class**
 
 1. Make sure you have an **active** TACC account and MFA pairing. You can check the status of your account be 
