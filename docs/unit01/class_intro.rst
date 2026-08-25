@@ -25,6 +25,8 @@ Class Introduction
 
 **Teaching Assistant:** Sichang Su (ss233865@eid.utexas.edu)
 
+**TA Office Hours:** Monday from 9:30 a.m. to 12:00 p.m, ASE 3.112, desk 3.36.
+
 
 **Important Links:**
 
