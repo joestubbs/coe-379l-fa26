@@ -337,12 +337,15 @@ Let's implement a simple linear parameterized model in Python. For simplicity,
 we'll assume we are trying to predict tactile strength just using temperature, 
 pressure and feed rate. The material grade would likely be very useful in the 
 prediction, but this simplification allows us to avoid categorical independent
-variables for the time being. 
+variables for the time being. We'll begin by specifying some initial values 
+for the parameters for the model. Execute the code below and make sure you 
+understand it at a high-level. 
 
 
 .. code-block:: python 
 
     X = [df["temperature_c"], df["pressure_mpa"], df["feed_rate_mm_s"],]
+    # some initial parameters for the model -- 
     parameters = [0.12, 3.5, -0.4, 12.0]
 
     def compute_prediction(parameters: list[float], X: list[float]) -> list[float]:
@@ -350,11 +353,14 @@ variables for the time being.
         return prediction    
     
     def compute_error(Y: list[float], prediction: list[float]): 
-        error = (Y - prediction) ** 2 
-        return error 
+        sq_error = (Y - prediction) ** 2 
+        mse = sq_error.mean()
+        return mse 
 
     prediction = compute_prediction(parameters, X)
-    error = compute_error(Y, prediction)
+    mse = compute_error(Y, prediction)
 
     print("First Prediction: ", prediction[0])
-    print("First Error: ", squared_error[0])
+    print("First Error: ", mse)
+
+
