@@ -361,6 +361,6 @@ understand it at a high-level.
     mse = compute_error(Y, prediction)
 
     print("First Prediction: ", prediction[0])
-    print("First Error: ", mse)
+    print("MSE: ", mse)
 
 
