@@ -227,7 +227,7 @@ Many may be surprised to learn that one of the highlights of the workshop was a 
 "Logic Theorist", largely considered to be the first AI program. Logic Theorist was an early 
 automated theorem prover! And in fact, it was a successful one: not only did it 38 of the first 52 theorems from 
 Whitehead and Russell’s famous *Principia Mathematica*, but it even found a more elegant proof 
-of one of the theorems. And, as part of impllementing Locif Theorist, its authors gave one of the first 
+of one of the theorems. And, as part of implementing Logic Theorist, its authors gave one of the first 
 implementations of *heuristic search*, which would go on to be a foundational pillar of AI for decades. 
 
 If we look back even just a couple of decades, we see that the field of Artificial Intelligence had already 
@@ -266,7 +266,7 @@ What is Machine Learning?
 Machine Learning (ML) is the subfield of AI that develops algorithms to analyze and infer patterns in *data*.
 
 Here, **data** is the key word. Instead of using logic, or a search technique, or a formal knowledge
-representation, ML looks for patterns in exsiting data sets and attempts to apply those patterns to 
+representation, ML looks for patterns in existing data sets and attempts to apply those patterns to 
 future data. 
 
 Why is Machine Learning having so much success *now*? Two primary reasons: 
@@ -315,7 +315,7 @@ and typed functional programming languages. Specifically, Curry-Howard establish
 
 * Propositions are types --- Propositional statements (or theorem statements) are equivalent to types 
   in a functional programming language.
-* Proofs are progrmans --- constructing a proof of a propositional statement is equivalent to constructing 
+* Proofs are programs --- constructing a proof of a propositional statement is equivalent to constructing 
   a program that inhabits the type (corresponding to the statement). 
 * Verification is type checking --- Checking whether a proof is correct is equivalent to checking 
   whether a program (the proof) has the correct type (the proposition). 

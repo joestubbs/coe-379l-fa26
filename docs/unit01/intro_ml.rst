@@ -43,13 +43,245 @@ At a high level, the process is something like:
 4. Validate the model using some of the prepared data. 
 5. Deploy the model to analyze new data samples.
 
+The Primary Learning Paradigms 
+-------------------------------
+
 We can categorize the primary paradigms that have historically been used in ML into three classes based 
 on the type of feedback signal used to train the model:
 
 1. *Supervised learning* ---  The dataset is labeled with “correct” values prior to doing the learning.
-2. *Unsupervised learning* --– The dataset used for training does not contain no correct labels; 
+2. *Unsupervised learning* --- The dataset used for training does not contain no correct labels; 
    the learning algorithm must infer patterns 
-3. *Reinforcement learning* --– The model "learns" through trial and error to optimize a “rewards” function.
+3. *Reinforcement learning* --- The model "learns" through trial and error to optimize a “rewards” function.
+
+There is also a fourth paradigm that has emerged recently called *self-supervised learning*. It is a kind of 
+hydrid between supervised and unsupervised learning where an automated method generates its own labels 
+from raw, unlabeled data before training the model. Various tricks are used to "label" the data, 
+such as:
+
+* Hiding some portion of the data from the model during training and using the "hidden" portion as the label. 
+  For example, for the sentence completion task, using full sentences found on the internet but hiding 
+  the end of the sentence from the model. 
+* Similarly, for vision tasks, one can remove portions of an image and ask the model to try and predict the 
+  missing pixels. 
+* For video data, show the model the first *n* frames and ask it to predict the *n+1*-st frame. 
+
+Let's look at some examples:
+
+1. Suppose we have historical weather data for Austin containing the average daily temperature for each calendar day. 
+   We want to train a model to predict the average Austin temperature based on the day using this dataset.
+2. Suppose we to train a model to distinguish between healthy and unhealthy crops, and support we have a set of 
+   images with some images containing healthy crops and others containing unhealthy crops. We want to train a model 
+   to distinguish healthy from unhealthy crops based on the images alone. 
+3. We want to train a model to operate the equipment in an industrial engineering laboratory. Operating the 
+   equipment involves commands that impact the energy consumption and the throughput of the facility. We will 
+   train the model by having it try different commands and using a feedback function that rewards commands that 
+   increase to throughput and decrease to energy consumption. 
+
+The first example is a supervised learning because we have data that contain labels (the average daily 
+temperatures). The second example is unsupervised, because we want to train the model on images without 
+labels. The third example is reinforcement learning because we are using a "rewards" function. 
+
+These examples suggest some important terminology: 
+
+* *Sample* or *observation* --- a single data point in the dataset. For example, a row in the historical weather data that 
+  contains the date and the average temperature, or a single crop image. 
+* *Independent variables* or *features* --- These are values used to make a prediction. In the case of historical
+  weather data, these are the calendar dates. In the case of crops, these are the images (pixel values).
+* *Dependent variables* or *target* or *label* --- These are the values we want the model to predict. Again, in 
+  the case of historical weather, these are the average daily temperatures. In the crops cases, these are the 
+  labels "healthy" and "unhealthy". 
+
+With this terminology, we can define the following basic mathematical notation: 
+
+* :math:`x_i` --- features or independent variables  
+* :math:`y_i` --- target or dependent variables 
+* :math:`f(x)` --- the model, to be learned during training 
+* :math:`y_i = f(x_i)` --- prediction at the value :math:`x_i` using the model 
+
+
+.. note:: 
+
+    This terminology is most natural in the supervised and unsupervised setting. Reinforcement learning has 
+    analogous concepts but some adjustments are needed. Since we won't be focusing on RL this semester, we 
+    will not say more about it at this time. 
+
+
+Continuing with the first set of examples above, we can identify the independent and dependent variables as 
+follows:
+
+1. Given a string of text, predict the next word. 
+
+   *The text string is the independent variable and the next word is the dependent variable.*
+2. Given an image, determine if it contains a human face. 
+
+   *The image is the independent variable and whether it contains a face is the dependent variable.*
+3. Given an image of a home or building from the aftermath of a storm, classify the damage done 
+   to the structure as "none", "small", or "large".
+
+   *The image is the independent variable and the dame label ("none", "small", or "large") is the dependent variable.*
+
+As an exercise, think through the remaining three examples. 
+
+.. 
+    4. Given a text description of an image, generate an image that "matches" the description. 
+
+  *The text description is the independent variable and the image is the dependent variable.*
+    5. Given details about a real estate property, such as address, square footage, number of rooms, 
+    etc., predict its market value. 
+
+    *The property details (address, square footage, etc.) are the independent variables and the market value is the dependent variable.*
+    6. Given an image of a crop, determine if the crop has a disease; similarly, determine if the crop
+    requires irrigation. 
+
+Regression and Classification 
+-----------------------------
+Now that we understand independent and dependent variables, we can define classification and 
+regression models. *Classification models* involve dependent variables that take a finite set of 
+values. We call such dependent variables *categorical* or *discrete*, just like with the categorical 
+variables we saw in the modules on pandas.
+
+A particular case worth noting is the so-called *boolean classifiers*, which try to
+predict dependent variables that contain just two possible values. The name comes from the 
+fact that the dependent variable can be modeled with a Boolean data type.
+
+Example 2) above is an example of a boolean classifier. The dependent variable --- whether the image
+contains a face --- can be represented by a boolean variable (True or False). 
+
+Similarly, example 3) is a classifier with 3 possible values ("none", "small", or "large").
+
+By contrast, a *regression model* predicts a dependent variable that take infinitely many 
+values. Example 5) provides an example of a regression model --- the market values for real estate
+properties are dollar amounts that are unbounded (in practice, they are bounded by very large 
+values but it can simplify our thinking to consider them unbounded).
+
+
+Model Parameters and Training: Finding Parameter Values that Reduce Loss
+-------------------------------------------------------------------------
+
+Parameters and Loss 
+^^^^^^^^^^^^^^^^^^^^
+How do we go about finding a model to predict the dependent variables from the independent variables?
+The idea with supervised learning is to use a *parameterized function*, that is, a function whose 
+formula is defined by *parameters*, and to look for values of the parameters that cause the function to 
+make good predictions on the labeled data. 
+
+For example, we could use a linear function with the form: 
+
+.. math:: 
+
+    f(X) = mX + b 
+
+where the :math:`m` and :math:`b` are the parameters of the function and :math:`X` is the independent variable. 
+Then we want to choose values for :math:`m` and :math:`b` such that the *loss* or error associated with 
+using :math:`f` to predict values of the dependent variable is minimized. 
+
+We can defined the loss in different ways. For example, the mean squared error (MSE) is defined using 
+
+.. math:: 
+
+    MSE = \frac{1}{|D|} \sum_{d\in D} (y_d - f(d))^2
+
+where :math:`D` is the dataset, :math:`d\in D` represents the feature associated with an observation, 
+and :math:`y_d` is the actual target associated with the observation. Observe that MSE:
+
+* is always positive, and  
+* computes an average of all per-element losses associated with the function. 
+
+*Discussion*: What would happen if we removed the square from the formula above? What about the 
+:math:`\frac{1}{D}` term? 
+
+The discussion above makes sense for regression problems where the target is a continuous variable. 
+But what about when the target is a categorical (i.e., we have a classification problem)? 
+We need a way to "predict" a class label, like "healthy" or "unhealthy", based on the output 
+of a function. 
+
+The idea is to use a *decision threshold* to decide a class label from a continuous variable. Conceptually, 
+we can think of the function as outputing a probability that the input is in some class. The decision 
+threshold is the minimum (predicted) probability that causes the input to be labeled in the class. 
+For example, if the decision threshold is 0.8 for deciding a crop is unhealthy, and the model predicts  
+a probability of 0.7 that a given crop input is unhealthy, then the input would be labeled healthy since 
+it was below the decision threshold. 
+
+Training 
+^^^^^^^^
+When we say we want to *train the model* (or, in older parlance, *fit the model*), what we mean is 
+we want to use an optimization algorithm to find the values of the parameters that minimize the loss. 
+The general strategy goes like this: 
+
+.. code-block:: python 
+
+    f = initialize_parameters()    # can use random values, for example 
+    repeat:
+        predictions = compute_predictions()  # evaluate function on independent variable
+        loss = compute_loss()                # compare predictions to actual values
+        f = update_parameters()              # update parameters to reduce the loss 
+    until loss << 0
+
+An entire semester could be spent on the theoretical underpinnings and numerical methods for implementing 
+optimization algorithms just for artificial neural networks. As engineering students, you have likely covered 
+some basic algorithms like gradient descent. We're not going to have time to cover that material, but if 
+you are interested, I highly recommend COE 311K which treats numerical methods (and is also sometimes taught by a 
+fellow TACC-ster :). 
+
+Inference 
+^^^^^^^^^
+Once a model has been trained, it can be used to predict the targets associated with new data. This is called 
+*inference* and it ultimately amounts to evaluating the learned function, :math:`f(X)`, on additional 
+input values. Typically, training a model is more computationally expensive than using it for inference, although 
+there are some exceptions (e.g., the K-nearest neighbors algorithm).
+
+Hands-on Lab 
+------------
+
+We'll reinforce the ideas above with some hands-on demonstrations. We'll use standard Python data science 
+libraries like ``pandas`` and ``numpy`` to work with a small CSV synthetic dataset. 
+
+The dataset describes manufactured materials ("polymers") from a fictional industrial engineering lab. 
+Each observation (row) corresponds to a single specimen that was produced using their machine. Three different
+grades of materials (corresponding to three different polymer formulas) can be produced. 
+As the specimens are being produced, sensors in the lab record the average temperature, pressure and "feed rate", 
+that is, the rate that the raw material is fed into the machine. After the specimens are produced, 
+they go through a testing anf quality assurance process where first their tensile strength is measured 
+and finally, the QA test determines if the specimen is defective. 
+
+
+Step 1: Read data into python
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We'll use the ``pandas`` library to read the raw CSV file into a dataframe object. A dataframe is a 
+like a 2d-array that can hold heterogeneous data. Each data frame contains rows and columns, like a 
+spreadsheet or database table. 
+
+Step 2: Inspect the dataframe 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The dataframe API has a variety of useful methods for accessing and manipulating the data it contains. 
+We'll use the ``info()`` to get a high-level description of the dataframe, and the ``head()`` method 
+to inspect the first several rows. 
+
+.. code-block:: python 
+
+    import pandas as pd
+
+    # create a dataframe directly from the raw csv
+    df = pd.read_csv(:"")
 
 
 
+Step 3: Identifying independent and dependent variables 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The grade of polymer being manufactured is an input to the process. 
+The measured variables include the temperature, pressure and tactile strength. 
+Finally, the 
+
+.. code-block:: python 
+
+Step 4: A first (toy) model and associated costs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+.. code-block:: python 
+
+
+Step 5: A 
