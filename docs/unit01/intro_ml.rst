@@ -242,7 +242,11 @@ Each observation (row) corresponds to a single specimen that was produced using 
 grades of materials (corresponding to three different polymer formulas) can be produced. 
 As the specimens are being produced, sensors in the lab record the average temperature, pressure and "feed rate", 
 that is, the rate that the raw material is fed into the machine. After the specimens are produced, 
+<<<<<<< HEAD
 they go through a testing and quality assurance process where first their tensile strength is measured 
+=======
+they go through a testing anf quality assurance process where first their tensile strength is measured 
+>>>>>>> dev
 and finally, the QA test determines if the specimen is defective. 
 
 
@@ -253,6 +257,7 @@ We'll use the ``pandas`` library to read the raw CSV file into a dataframe objec
 like a 2d-array that can hold heterogeneous data. Each data frame contains rows and columns, like a 
 spreadsheet or database table. 
 
+<<<<<<< HEAD
 
 .. code-block:: python 
 
@@ -267,6 +272,8 @@ spreadsheet or database table.
 
 
 
+=======
+>>>>>>> dev
 Step 2: Inspect the dataframe 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -276,6 +283,7 @@ to inspect the first several rows.
 
 .. code-block:: python 
 
+<<<<<<< HEAD
     df.info()
 
 
@@ -314,11 +322,19 @@ Output:
         2 	S003 	Polymer A 	    198 	    2.90 	        17 	        43.4 	            False
         3 	S004 	Polymer A 	    203 	    3.05 	        15 	        45.5 	            False
         4 	S005 	Polymer A 	    208 	    3.20 	        20 	        47.6 	            False
+=======
+    import pandas as pd
+
+    # create a dataframe directly from the raw csv
+    df = pd.read_csv(:"")
+
+>>>>>>> dev
 
 
 Step 3: Identifying independent and dependent variables 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The grade of polymer being manufactured is an input to the process. 
+<<<<<<< HEAD
 The measured variables include the temperature, pressure and tensile strength. 
 Finally, the QA test determines whether the sample is defective. 
 
@@ -338,10 +354,20 @@ we'll assume we are trying to predict tactile strength just using temperature,
 pressure and feed rate. The material grade would likely be very useful in the 
 prediction, but this simplification allows us to avoid categorical independent
 variables for the time being. 
+=======
+The measured variables include the temperature, pressure and tactile strength. 
+Finally, the 
+
+.. code-block:: python 
+
+Step 4: A first (toy) model and associated costs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>>>>>>> dev
 
 
 .. code-block:: python 
 
+<<<<<<< HEAD
     X = [df["temperature_c"], df["pressure_mpa"], df["feed_rate_mm_s"],]
     parameters = [0.12, 3.5, -0.4, 12.0]
 
@@ -358,3 +384,7 @@ variables for the time being.
 
     print("First Prediction: ", prediction[0])
     print("First Error: ", squared_error[0])
+=======
+
+Step 5: A 
+>>>>>>> dev
