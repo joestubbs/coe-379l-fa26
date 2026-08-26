@@ -10,11 +10,8 @@ We are using Nix for the local build. Note that the requirements.txt file is inc
 To run the doc engine locally, first enter the Nix development environment
 
 ```
-$ nix develop -i 
+$ nix develop 
 ```
-
-We recommend the `-i` so that environment variables set in the outside shell don't interfere. 
-In particular, this can prevent issues with locale errors, etc.
 
 Once the Nix development environment is activated, use the Makefile targets to launch the documentation site, 
 e.g., 
