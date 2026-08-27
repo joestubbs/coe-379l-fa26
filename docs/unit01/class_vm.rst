@@ -66,7 +66,8 @@ Remember, you only need to follow the first step to install the actual VSCode ap
 
 Installing the Remote-SSH VSCode Extension
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-After installing VSCode, you will also want to install the RemoteSSH extension. 
+After installing VSCode, you will also want to install the 
+`RemoteSSH <https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh>`_ extension. 
 It provides support for developing code on remote servers using an SSH connection which 
 will allow you to work with code and processes running on your TACC VM. 
 
