@@ -9,7 +9,7 @@ very wrong.
 
 SSH Access To Your VM
 ----------------------
-Once you have provides the instructors with your TACC account and your VM has been created, 
+Once you have provided the instructors with your TACC account and your VM has been created, 
 you can ssh to it using its IP address and your TACC credentials. Make sure you are able to 
 SSH to your VM using your TACC username, password, and MFA token.
 
