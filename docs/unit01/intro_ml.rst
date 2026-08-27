@@ -231,8 +231,8 @@ Once a model has been trained, it can be used to predict the targets associated 
 input values. Typically, training a model is more computationally expensive than using it for inference, although 
 there are some exceptions (e.g., the K-nearest neighbors algorithm).
 
-Hands-on Lab 
-------------
+Hands-on
+--------
 
 We'll reinforce the ideas above with some hands-on demonstrations. We'll use standard Python data science 
 libraries like ``pandas`` and ``numpy`` to work with a small CSV synthetic dataset. 
@@ -338,8 +338,10 @@ we'll assume we are trying to predict tactile strength just using temperature,
 pressure and feed rate. The material grade would likely be very useful in the 
 prediction, but this simplification allows us to avoid categorical independent
 variables for the time being. We'll begin by specifying some initial values 
-for the parameters for the model. Execute the code below and make sure you 
-understand it at a high-level. 
+for the parameters for the model. 
+
+Execute the code below and make sure you understand it at a high-level. You can try 
+modifying the model parameters (by hand) and seeing how the error is impacted. 
 
 
 .. code-block:: python 
@@ -353,7 +355,7 @@ understand it at a high-level.
         return prediction    
     
     def compute_error(Y: list[float], prediction: list[float]): 
-        sq_error = (Y - prediction) ** 2 
+        sq_error = (Y - prediction) ** 2  # is this correct? why?
         mse = sq_error.mean()
         return mse 
 
@@ -364,3 +366,42 @@ understand it at a high-level.
     print("MSE: ", mse)
 
 
+Note that we are not showing any training at this time. In the code above, we assume we have computed the parameters to
+the model and we are using it for *inference* (i.e., prediction on samples). 
+
+Artificial Neurons and Artificial Neural Networks 
+-------------------------------------------------
+
+Machine Learning has been dominated by artificial neural networks (ANNs) and, in particular, deep neural 
+networks (DNNs) over the last decade or so. The fundamental building block for ANNs is the *artificial neuron*, 
+a mathematical function that looks very similar to the parameterized linear functions we looked 
+at earlier, but it adds an *activation function* which is usually non-linear. The standard formula for 
+an artificial neuron can be written vectors as follows: 
+
+.. math:: 
+
+    y = h (\sum_i w_i * x_i + b)
+
+or in vector form:
+
+.. math:: 
+
+    y = h (w\cdot x + b)
+
+
+where :math:`w` is a vector of *weights*, :math:`b` is called the *bias*, and :math:`h` is the activation function. 
+
+An ANN then is composed of a series of layers of artificial neurons. Within the network, intermediate outputs 
+produced by one layer are passed to the next layer as inputs before ultimately producing an output. The weights 
+and biases of all the neurons in the network are collectively referred to as the *parameters* of the network. 
+These are the values that get updated during training. 
+
+.. figure:: ./images/ANN_arch.png
+    :width: 500px
+    :align: center
+    :alt: Architecture of an ANN
+
+    Architecture of an ANN. 
+
+
+We will look more closely at ANNs and training in the next lecture. 
