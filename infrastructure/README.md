@@ -15,14 +15,19 @@ Students should enter their names and TACC usernames here. Add the students to a
 
 Vms are deployed in the Jetstream 2 TACC region under Openstack project "ENG230008TACC". This is best done using the [web gui](js2.jetstream-cloud.org).
 
-Deploy the required amount of VMs with the following features:
+Deploy the required amount of VMs with the following features:  
 
-Name: coe379
-Image: Featured-Minimal-Ubuntu24
-Flavor: m3.medium
-Network: sharednet1
-Security group: ssh-icmp-login
-Keypair: Upload /root/.ssh/id_ecdsa.pub from host cic05
+Name: coe379  
+
+Image: Featured-Minimal-Ubuntu24  
+
+Flavor: m3.medium  
+
+Network: sharednet1  
+
+Security group: ssh-icmp-login  
+
+Keypair: Upload /root/.ssh/id_ecdsa.pub from host cic05  
 
 Once servers are deployed, create a file with uids of all VMs, and a separate file with uids of the same amount of floating IPs assigned to the project.
 
