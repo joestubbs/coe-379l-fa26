@@ -18,6 +18,13 @@ in various theoretical fields, including mathematics, computer science, physics,
    unit01/overview
 
 
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Readings:
+
+   readings/datascience.rst
+
 Additional Resources
 --------------------
 
