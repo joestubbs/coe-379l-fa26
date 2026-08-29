@@ -9,7 +9,7 @@ very wrong.
 
 SSH Access To Your VM
 ----------------------
-Once you have provides the instructors with your TACC account and your VM has been created, 
+Once you have provided the instructors with your TACC account and your VM has been created, 
 you can ssh to it using its IP address and your TACC credentials. Make sure you are able to 
 SSH to your VM using your TACC username, password, and MFA token.
 
@@ -66,7 +66,8 @@ Remember, you only need to follow the first step to install the actual VSCode ap
 
 Installing the Remote-SSH VSCode Extension
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-After installing VSCode, you will also want to install the RemoteSSH extension. 
+After installing VSCode, you will also want to install the 
+`RemoteSSH <https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh>`_ extension. 
 It provides support for developing code on remote servers using an SSH connection which 
 will allow you to work with code and processes running on your TACC VM. 
 
@@ -116,3 +117,70 @@ all went well you should see a message that you are "Connected to remote", like 
 
 Click "Open Folder" and then select your Linux home directory (i.e., ``/home/<username>``) in the 
 command palette box to open that folder. Click "trust the authors" when prompted. 
+
+Keeping your VM Up-to-date
+--------------------------
+
+Accessing a Terminal in VSCode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+During the course, we will be executing commands in the remote machine, in addition
+to writing code in VSCode. The integrated environment of VSCode provides a terminal
+which is very convenient for working side by side with the files in the editor.
+
+To open a terminal in VSCode, invoke the Command Palette (:kbd:`Ctrl-Shift-P` or 
+:kbd:`Cmd-Shift-P`), and execute the selection "Terminal: Focus Terminal". This will
+open a terminal with a shell in the remote machine.
+
+Updating the VM
+^^^^^^^^^^^^^^^
+
+It is very likely that during the semester we will add more libraries, extra
+applications, or configuration to the VMs. To update your VM to the latest version
+you can open a terminal in the remote machine and execute the command:
+
+.. code-block:: console
+
+    self-update 
+
+.. important::
+
+    It is always safe to execute ``self-update``. It will update the machine
+    without deleting any of your files.
+
+    **However**, we strongly recommend that you either:
+
+    - keep your important files or projects in a version controlled repository 
+      (for example, using ``git``), and that you sync the repositories to a cloud
+      service (for example, Github) or to your laptop,
+    - or otherwise, backup your files in your laptop or cloud service with the method
+      of your choice.
+
+.. tip::
+
+    We recommend that you run ``self-update`` the first time you access your VM, to 
+    ensure that you have the newest version of the system.
+
+(Optional) Adding New Libraries or Software
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. caution::
+
+    Please, exercise caution if you decide to follow this section. Consult with
+    the instructors to ensure that the software you want to install is appropriate for
+    the course.
+
+The VMs have been configured with the tooling needed for the class (and we will
+publish updates as necessary, that you can install with ``self-update``). However,
+if you need extra software or extra Python libraries for some of your projects, you
+can install them by modifying the following files (the files themselves include more 
+detailed instructions): 
+
+- ``~/.course-machine/extraPackages.nix``: add here general software, such as command
+  line utilities or new languages.
+- ``~/.course-machine/extraPythonPackages.nix``: add here new Python libraries that
+  will be available in the global Python interpreter.
+
+  After modifying these files, run ``self-update``. Your local modifications will
+  persist across updates.
+

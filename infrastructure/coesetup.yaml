@@ -1,0 +1,275 @@
+---
+- name: Build dynamic inventory from spreadsheet list
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Add course hosts
+      ansible.builtin.add_host:
+        name: "{{ fields[1] }}"
+        groups: course_hosts
+
+        ansible_host: "{{ fields[2] }}"
+        ansible_user: selene
+
+        ansible_ssh_args: >-
+          -C
+          -o ControlMaster=auto
+          -o ControlPersist=60s
+          -o StrictHostKeyChecking=no
+          -o UserKnownHostsFile=/dev/null
+          -o KbdInteractiveAuthentication=yes
+          -o PreferredAuthentications=publickey,keyboard-interactive
+
+        course_name: "{{ quoted_parts[1] }}"
+        course_email: "{{ fields[0] }}"
+        course_user: "{{ fields[1] }}"
+
+      vars:
+        quoted_parts: "{{ item.split('\"') }}"
+        fields: "{{ quoted_parts[2].split() }}"
+
+      loop: "{{ lookup('file', 'user-inventory').splitlines() }}"
+      when: item | trim | length > 0
+
+
+- name: Configure course machines
+  hosts: course_hosts
+  gather_facts: true
+  serial: 10
+
+  tasks:
+
+    ###########################################################################
+    # Requirements
+    ###########################################################################
+
+    - name: Install required packages
+      become: true
+      ansible.builtin.apt:
+        name:
+          - curl
+          - git
+          - ca-certificates
+          - acl
+          - sssd-tools
+        state: present
+        update_cache: true
+
+
+    ###########################################################################
+    # Course user
+    ###########################################################################
+
+    - name: Verify course user exists
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ course_user }}"
+
+    - name: Set course user home
+      ansible.builtin.set_fact:
+        course_home: "{{ getent_passwd[course_user][4] }}"
+
+
+    ###########################################################################
+    # SSH/PAM access
+    ###########################################################################
+
+    - name: Remove existing assigned-user access rule
+      become: true
+      ansible.builtin.lineinfile:
+        path: /etc/security/access.conf
+        regexp: '^\+\s*:\s*{{ course_user | regex_escape }}\s*:\s*ALL\s*$'
+        state: absent
+
+    - name: Add assigned user before default deny
+      become: true
+      ansible.builtin.lineinfile:
+        path: /etc/security/access.conf
+        line: "+ : {{ course_user }} : ALL"
+        insertbefore: '^\s*-\s*:\s*ALL\s*:\s*ALL\s*$'
+        state: present
+        backup: true
+
+
+    ###########################################################################
+    # Passwordless sudo
+    ###########################################################################
+
+    - name: Give course user passwordless sudo
+      become: true
+      ansible.builtin.copy:
+        dest: "/etc/sudoers.d/90-{{ course_user }}"
+        content: "{{ course_user }} ALL=(ALL) NOPASSWD:ALL\n"
+        owner: root
+        group: root
+        mode: "0440"
+        validate: "/usr/sbin/visudo -cf %s"
+
+
+    ###########################################################################
+    # Determine local vs LDAP/SSSD
+    ###########################################################################
+
+    - name: Check whether course user exists in local passwd file
+      become: true
+      ansible.builtin.shell: |
+        grep -q '^{{ course_user | regex_escape }}:' /etc/passwd
+      args:
+        executable: /bin/bash
+      register: local_user
+      changed_when: false
+      failed_when: false
+
+
+    ###########################################################################
+    # Nix
+    ###########################################################################
+
+    - name: Check whether Nix is already installed
+      become: true
+      become_user: "{{ course_user }}"
+      become_flags: "-H"
+      ansible.builtin.stat:
+        path: "{{ course_home }}/.nix-profile/bin/nix"
+      register: nix_installed
+
+    - name: Install Nix
+      become: true
+      become_user: "{{ course_user }}"
+      become_flags: "-H"
+      ansible.builtin.shell: |
+        curl -L https://nixos.org/nix/install | sh -s -- --no-daemon
+      args:
+        executable: /bin/bash
+      when: not nix_installed.stat.exists
+
+
+    ###########################################################################
+    # Enable flakes
+    ###########################################################################
+
+    - name: Check whether flakes are enabled
+      become: true
+      become_user: "{{ course_user }}"
+      become_flags: "-H"
+      ansible.builtin.shell: |
+        test -f "{{ course_home }}/.config/nix/nix.conf" &&
+        grep -q 'flakes' "{{ course_home }}/.config/nix/nix.conf"
+      args:
+        executable: /bin/bash
+      register: flakes_enabled
+      changed_when: false
+      failed_when: false
+
+    - name: Enable flakes
+      become: true
+      become_user: "{{ course_user }}"
+      become_flags: "-H"
+      ansible.builtin.shell: |
+        curl https://gist.githubusercontent.com/waltermoreira/d37daa2c915817e8eccf600fc9299a56/raw/enable-flakes.sh | sh -s
+      args:
+        executable: /bin/bash
+      when: flakes_enabled.rc != 0
+
+
+    ###########################################################################
+    # course-machine
+    ###########################################################################
+
+    - name: Clone course-machine if missing
+      become: true
+      become_user: "{{ course_user }}"
+      become_flags: "-H"
+      ansible.builtin.git:
+        repo: https://github.com/provables/course-machine.git
+        dest: "{{ course_home }}/course-machine"
+        update: false
+
+
+    ###########################################################################
+    # user.nix
+    ###########################################################################
+
+    - name: Configure user.nix
+      become: true
+      become_user: "{{ course_user }}"
+      become_flags: "-H"
+      ansible.builtin.copy:
+        dest: "{{ course_home }}/course-machine/user.nix"
+        mode: "0644"
+        content: |
+          { ... }:
+          {
+            imports = [ ./modules/my.nix ];
+            config = {
+              my.system = "x86_64-linux";
+              my.name = {{ course_name | to_json }};
+              my.username = {{ course_user | to_json }};
+              my.email = {{ course_email | to_json }};
+              my.home = {{ course_home | to_json }};
+              my.machineName = {{ ansible_hostname | to_json }};
+            };
+          }
+
+
+    ###########################################################################
+    # LDAP/SSSD shell workaround
+    ###########################################################################
+
+    - name: Patch chsh for LDAP/SSSD users
+      become: true
+      become_user: "{{ course_user }}"
+      become_flags: "-H"
+      ansible.builtin.replace:
+        path: "{{ course_home }}/course-machine/modules/base.nix"
+        regexp: '(?m)^(\s*)sudo /usr/bin/chsh -s \$\{config\.programs\.zsh\.package\}/bin/zsh \$\{config\.my\.username\}\s*$'
+        replace: |-
+          \1sudo /usr/sbin/sss_override user-add ${config.my.username} --shell ${config.programs.zsh.package}/bin/zsh
+          \1sudo /usr/bin/systemctl restart sssd
+      when: local_user.rc != 0
+
+    ###########################################################################
+    # Run nix run
+    #
+    # Preserve the installer Nix store binary, remove nix from the user
+    # environment so Home Manager does not collide with nix-daemon.socket,
+    # then explicitly keep the preserved Nix binary on PATH.
+    ###########################################################################
+
+    - name: Run nix run
+      become: true
+      become_user: "{{ course_user }}"
+      become_flags: "-H"
+      ansible.builtin.shell: |
+        set -e
+
+        . "{{ course_home }}/.nix-profile/etc/profile.d/nix.sh"
+
+        NIX_BIN="$(readlink -f "$(command -v nix)")"
+        NIX_BIN_DIR="$(dirname "$NIX_BIN")"
+
+        nix-env -e nix
+
+        export PATH="$NIX_BIN_DIR:$PATH"
+
+        nix run
+      args:
+        executable: /bin/bash
+        chdir: "{{ course_home }}/course-machine"
+
+
+    ###########################################################################
+    # Verify shell
+    ###########################################################################
+
+    - name: Verify resulting login shell
+      become: true
+      ansible.builtin.command:
+        cmd: getent passwd "{{ course_user }}"
+      register: resulting_passwd
+      changed_when: false
+
+    - name: Show resulting passwd entry
+      ansible.builtin.debug:
+        msg: "{{ resulting_passwd.stdout }}"

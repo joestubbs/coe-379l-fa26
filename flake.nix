@@ -6,12 +6,12 @@
     shell-utils.url = "github:waltermoreira/shell-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils, shell-utils }:
+  outputs = { nixpkgs, flake-utils, shell-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
-        shell = shell-utils.myShell.${system};
-        python = pkgs.python311;
+        inherit (shell-utils.lib.${system}) shell;
+        python = pkgs.python313;
         docsPython = python.withPackages (ps: [
           ps.sphinx
           ps.sphinx-autobuild
@@ -20,30 +20,37 @@
           ps.docutils
           ps.setuptools
         ]);
-        commonPackages = [ docsPython pkgs.rsync pkgs.gnumake pkgs.lesspipe pkgs.less pkgs.coreutils pkgs.bashInteractive pkgs.which ];
-      in {
-        devShells.default = pkgs.mkShell {
+        commonPackages = [
+          docsPython
+          pkgs.rsync
+          pkgs.gnumake
+          pkgs.lesspipe
+          pkgs.less
+          pkgs.coreutils
+          pkgs.bashInteractive
+          pkgs.which
+        ];
+        html = pkgs.stdenv.mkDerivation {
+          # builds to ./result
+          name = "coe379l";
+          src = ./.;
+          buildInputs = commonPackages;
+          buildPhase = ''
+            make html
+          '';
+          installPhase = ''
+            mkdir -p $out
+            rsync -av _build/html $out/
+          '';
+        };
+
+      in
+      {
+        devShells.default = shell {
           name = "379L";
           buildInputs = commonPackages;
-          shellHook = ''
-           eval "$(lesspipe.sh)"
-           '';
         };
-        # packages = {
-        #   default = pkgs.stdenv.mkDerivation {
-        #     # builds to ./result
-        #     name = "coe379l";
-        #     src = ./.;
-        #     buildInputs = commonPackages;
-        #     buildPhase = ''
-        #       make html
-        #     '';
-        #     installPhase = ''
-        #       mkdir -p $out
-        #       cp -r build/html $out/
-        #     '';
-        #   };
-        # };
+        packages.default = html;
       }
     );
 }
