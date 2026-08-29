@@ -21,7 +21,7 @@ in various theoretical fields, including mathematics, computer science, physics,
 
 .. toctree::
    :maxdepth: 1
-   :caption: Readings:
+   :caption: Required Readings:
 
    readings/datascience.rst
 

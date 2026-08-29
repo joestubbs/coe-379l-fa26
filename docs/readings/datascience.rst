@@ -1,7 +1,7 @@
 Data Processing for Machine Learning 
 ====================================
 
-This supplemental reading introduces basic data science concepts for machine learning 
+This first required reading introduces basic data science concepts for machine learning 
 and provides hands-on examples that leverage the Python programming ecosystem, 
 including ``pandas``, ``numpy`` and ``maplotlib`` libraries. 
 
