@@ -222,6 +222,27 @@ Summary statistics give us a good overview of a dataset, but visualization can r
 are hard to find in the summary numbers. Visualization involves identifying clusters, outliers, 
 nonlinear relationships, changes in variability, and/or differences between groups. 
 
+Scatter Plot 
+^^^^^^^^^^^^
+A scatter plot compares two numerical variables. matplotlib's ``scatter`` function accepts arguments 
+for the x and y axis. 
+
+.. code-block:: python 
+
+    import matplotlib.pyplot as plt
+    plt.scatter(
+        df["pressure_mpa"],
+        df["tensile_strength_mpa"],
+    )
+    plt.xlabel("Process pressure")
+    plt.ylabel("Tensile strength")
+    plt.show()    
+
+.. figure:: ./images/scatter-plot.png
+    :width: 500px
+    :align: center
+
+
 Histogram 
 ^^^^^^^^^
 A histogram or boxplot helps reveal the range and shape of a numeric variable. For example, a 
@@ -352,3 +373,21 @@ or two correct predictions as strong evidence that one model is better.
 
 Exercises: Test Your Understanding 
 ----------------------------------
+
+**Exercise 1.** Inspect and describe the dataset.
+
+a. Load the CSV into a DataFrame and display its first five rows.
+b. Record the number of observations and columns.
+c. Identify the identifier, numeric features, categorical feature, regression target, and classification target.
+d. Check for missing values and inspect the observed numerical ranges.
+
+**Exercise 2.** Treat the material grade column. 
+
+1. Use one-hot encoding to represent material_grade.
+2. Confirm that the boolean columns contain only zeros and ones.
+3. Explain why we do not just assign material_grade the values 1, 2, and 3.
+
+**Exercise 3.** Visualizing the data. 
+
+a. Plot the distribution of tensile strength.
+b. Use a scatter plot to compare temperature and tensile strength. 
