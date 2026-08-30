@@ -31,19 +31,17 @@ Let's assume that the images will be the same size of 28x28 pixels.
     :alt: 
 
 
-We know that the neural network takes input that has to be a flattened 1D vector. In the example above, 
-the input vector provided to the neural network will be of size 784x1.
-We can add one or more hidden layers, and our output layer will have two classes, probabilities 
-showing whether a given image is a cat or a dog. While functional for simple tasks, this approach struggles with real-world computer vision due to four key limitations:
+While basic ANNs can classify 28x28 images (flattened to a 784x1 vector), they struggle with complex computer vision due to four main limitations:
 
+**Loss of Spatial Structure:** Flattening destroys 2D pixel relationships (edges, shapes, boundaries).
 
-*   **Loss of Spatial Structure:** Flattening strips away 2D pixel adjacency. ANNs evaluate pixels independently, losing vital local features like edges, curves, or contiguous boundaries (e.g., the shape of a cat's ear).
-*   **Positional Sensitivity (Lack of Translation Equivariance):** ANNs learn feature positions rigidly relative to the full frame. If an object shifts from the top-left to the bottom-right, an ANN treats it as an entirely new pattern and often fails to classify it.
-*   **Absence of Feature Hierarchies:** Fully connected layers process all inputs simultaneously rather than building representations incrementally (e.g., assembling pixels into edges, edges into shapes, and shapes into objects).
-*   **Parameter Explosion:** FC layers scale poorly. A modest 256 x 256 x 3 color image fed into a single hidden layer of 1,000 neurons requires **~196 million parameters**, leading to massive memory usage and severe overfitting.
+**Positional Sensitivity:** ANNs lack translation equivariance; moving an object makes it look entirely new to the model.
 
-Convolutional Neural Networks (CNNs) resolve these issues by using localized kernel operations to preserve spatial relationships, share weights across image regions, and build feature hierarchies efficiently.
-The key lies in two simple yet powerful layers of a CNN, known as the **convolutional** and **pooling** layers.
+**No Feature Hierarchies:** Fully connected (FC) layers process all pixels at once rather than building up from edges to shapes to objects.
+
+**Parameter Explosion:** FC layers scale poorly. A modest 256 x 256 x 3 color image fed into a single hidden layer of 1,000 neurons requires **~196 million parameters**, leading to massive memory usage and severe overfitting.
+
+Convolutional Neural Networks (CNNs) solve these issues through convolutional and pooling layers, which preserve spatial structure, share weights, and efficiently build feature hierarchies.
 
 Convolutional Layer
 ^^^^^^^^^^^^^^^^^^^^
