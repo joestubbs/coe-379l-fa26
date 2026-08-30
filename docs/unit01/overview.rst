@@ -12,3 +12,5 @@ with the computing environment at TACC that they will use for completing class w
    class_intro
    class_vm
    intro_ml
+   anns 
+   cnns 
