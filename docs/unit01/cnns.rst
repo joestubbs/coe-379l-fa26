@@ -1,7 +1,7 @@
 Convolutional Neural Networks for Image Classification 
 =======================================================
 
-n this lecture, we will introduce Convolutional Neural Networks (CNNs), 
+In this lecture, we will introduce Convolutional Neural Networks (CNNs), 
 a class of deep neural networks primarily used in image recognition and computer 
 vision tasks. We will also discuss why CNNs are preferred over ANNs for image 
 classification. Although CNNs are a popular choice for image classification, they 
