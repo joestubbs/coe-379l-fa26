@@ -20,7 +20,7 @@ Challenges with ANNs for Image Data
 
 Standard Artificial Neural Networks (ANNs) process images as flattened 1D vectors (e.g., a 28 x 28 image becomes a 784 x 1input vector). 
 
-In the previous lecture, we saw an example of handwritten digit classification using ANNs. 
+In the previous lecture, we saw an example of clothing classification on Fashion-MNIST dataset using ANNs. 
 Suppose we want to build a similar ANN model to distinguish between images of cats and dogs. 
 Let's assume that the images will be the same size of 28x28 pixels.
 
@@ -34,14 +34,38 @@ Let's assume that the images will be the same size of 28x28 pixels.
 While basic ANNs can classify 28x28 images (flattened to a 784x1 vector), they struggle with complex computer vision due to four main limitations:
 
 **Loss of Spatial Structure:** Flattening destroys 2D pixel relationships (edges, shapes, boundaries).
+ANNs treat input data as flat vectors, disregarding the spatial relationships present in the image.
+As seen in the previous examples, we input a 1D array of pixel intensities to the neural network, 
+which is formed by flattening the 2D array of size 28x28 pixels. 
+Unfortunately, this approach causes a loss of spatial information associated with the image. 
+For example, while detecting the cat's pointy ears, with ANNs we may not know which two or more pixels
+placed next to each other formed a pointy edge of the cat's ears, and this could be an important and 
+distinguishing feature to differentiate between a cat and a dog.  In contrast, CNNs preserve the spatial 
+structure of images through *convolutional* and *pooling* layers, allowing them to capture local patterns and spatial 
+hierarchies effectively.
 
 **Positional Sensitivity:** ANNs lack translation equivariance; moving an object makes it look entirely new to the model.
+ANNs cannot recognize objects if their position in the image changes.
+For example, ANNs might excel at predicting cats that are on the left side of an image and then
+fail to recognize the cat if the same picture is translated, rotated or cropped. CNNs, on the other hand, 
+use a small `filter` also known as a `kernel`, in the convolutional layer, which is translated across the entire image
+to learn the hierarchical features in an image. 
 
 **No Feature Hierarchies:** Fully connected (FC) layers process all pixels at once rather than building up from edges to shapes to objects.
+ANNs lack the capability of learning hierarchical features.
+On the other hand in CNNs, lower layers learn low-level features like edges and textures, while higher 
+layers learn more abstract features like shapes and objects. 
 
 **Parameter Explosion:** FC layers scale poorly. A modest 256 x 256 x 3 color image fed into a single hidden layer of 1,000 neurons requires **~196 million parameters**, leading to massive memory usage and severe overfitting.
 
 Convolutional Neural Networks (CNNs) solve these issues through convolutional and pooling layers, which preserve spatial structure, share weights, and efficiently build feature hierarchies.
+
+
+.. figure:: ./images/cat_spatial1.png
+    :width: 700px
+    :align: center
+    :alt: 
+
 
 Convolutional Layer
 ^^^^^^^^^^^^^^^^^^^^
@@ -82,7 +106,7 @@ element in the feature map. This final result is then passed on to the next laye
 The dimension of the feature map can be computed mathematically as 
 
 .. math:: 
-    dim FM = (n-f+1) \times (n-f+1),
+    dim FM = (n-f+1) x (n-f+1),
 
 where :math:`n` is the input dimension, and :math:`f` is the filter dimension. 
 For example, in the case illustrated above, the output dimension will be of size :math:`(5-3+1) \times (5-3+1)= 3\times 3`.
