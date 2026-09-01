@@ -312,13 +312,12 @@ three separate subsets, as follows:
   to evaluate choices such as the network architecture and hyperparameters such as 
   learning rate and number of training epochs.
 * Test data are held back for a final evaluation after the development choices have been made.
+  If we repeatedly evaluate the model on the test test, and we modify the system in response, 
+  the test set has effectively become another validation set. **This is a cardinal sin in machine learning!** 
+  A new, untouched evaluation set would then be needed for an unbiased final estimate.
 
- we repeatedly evaluate the model on the test test, and we modify the system in response, 
- the test set has effectively become another validation set. **This is a cardinal sin in machine learning!** 
- A new, untouched evaluation set would then be needed for an unbiased final estimate.
-
- Tensorflow gives us a very convenient API for splitting datasets like Fashion-MNIST, but 
- note that the validation set will be split from the training set later. 
+Tensorflow gives us a very convenient API for splitting datasets like Fashion-MNIST, but 
+note that the validation set will be split from the training set later. 
 
  .. code-block:: python3 
 
@@ -382,7 +381,7 @@ For example, is it required that the hidden layer have 128 neurons? What about t
 
 You can think of the ANN architecture as a sequence of transformations:
 
-1. Accept a (28\times28) image.
+1. Accept a (28x28) image.
 2. Rescale its pixel values.
 3. Flatten the image into 784 values.
 4. Produce a learned hidden representation containing 128 values.
