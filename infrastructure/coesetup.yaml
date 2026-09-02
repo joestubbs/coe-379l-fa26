@@ -248,3 +248,12 @@
     - name: Show resulting passwd entry
       ansible.builtin.debug:
         msg: "{{ resulting_passwd.stdout }}"
+
+    - name: Verify self-update is installed
+      become: true
+      become_user: "{{ course_user }}"
+      ansible.builtin.stat:
+        path: "{{ course_home }}/.nix-profile/bin/self-update"
+      register: self-update
+      failed_when: false
+      
