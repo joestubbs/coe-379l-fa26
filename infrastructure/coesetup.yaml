@@ -227,16 +227,7 @@
       become_flags: "-H"
       ansible.builtin.shell: |
         set -e
-
         . "{{ course_home }}/.nix-profile/etc/profile.d/nix.sh"
-
-        NIX_BIN="$(readlink -f "$(command -v nix)")"
-        NIX_BIN_DIR="$(dirname "$NIX_BIN")"
-
-        nix-env -e nix
-
-        export PATH="$NIX_BIN_DIR:$PATH"
-
         nix run
       args:
         executable: /bin/bash
