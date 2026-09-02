@@ -623,6 +623,5 @@ References and Additional Resources
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 1. `Convolution Animation <https://towardsdatascience.com/intuitively-understanding-convolutions-for-deep-learning-1f6f42faee1>`_ 
-2. `Types of CNN Architectures <https://towardsdatascience.com/various-types-of-convolutional-neural-network-8b00c9a08a1b>`_ 
 
 
