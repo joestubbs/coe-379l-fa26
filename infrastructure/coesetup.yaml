@@ -214,22 +214,6 @@
 
 
     ###########################################################################
-    # LDAP/SSSD shell workaround
-    ###########################################################################
-
-    - name: Patch chsh for LDAP/SSSD users
-      become: true
-      become_user: "{{ course_user }}"
-      become_flags: "-H"
-      ansible.builtin.replace:
-        path: "{{ course_home }}/course-machine/modules/base.nix"
-        regexp: '(?m)^(\s*)sudo /usr/bin/chsh -s \$\{config\.programs\.zsh\.package\}/bin/zsh \$\{config\.my\.username\}\s*$'
-        replace: |-
-          \1sudo /usr/sbin/sss_override user-add ${config.my.username} --shell ${config.programs.zsh.package}/bin/zsh
-          \1sudo /usr/bin/systemctl restart sssd
-      when: local_user.rc != 0
-
-    ###########################################################################
     # Run nix run
     #
     # Preserve the installer Nix store binary, remove nix from the user
