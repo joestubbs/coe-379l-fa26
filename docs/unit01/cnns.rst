@@ -83,13 +83,13 @@ the next set of filters could determine slightly higher-level features, such as 
 
     An animation of a convolutional layer (credit: [1]).
 
-In the above animation, you can see how a :math:`3x3` window slides across an image of size :math:`5x5` 
-and builds a feature map of size :math:`3x3` using the convolution operation.
+In the above animation, you can see how a 3 x 3 window slides across an image of size 5 x 5 
+and builds a feature map of size 3 x 3 using the convolution operation.
 Let's understand the convolution operation that is performed when the kernel/filter slides across the 
 input image with example below.
 
 **Convolution Calculation: An Example.**
-Suppose we have a :math:`5x5` input image and we apply a :math:`3x3` 2D filter to it for feature learning. 
+Suppose we have a 5 x 5 input image and we apply a 3 x 3 2D filter to it for feature learning. 
 To perform a convolution, we sum up the element-wise dot products of the input and filter. This value is 
 added to the output, referred to as a *feature map*.
 Then, we move the sliding window by a certain number of cells and repeat the calculation. We continue 
@@ -104,11 +104,12 @@ element in the feature map. This final result is then passed on to the next laye
 **Dimensions of a Feature Map.** 
 The dimension of the feature map can be computed mathematically as 
 
-.. math:: 
-    dim FM = (n-f+1) x (n-f+1),
+.. math::
+
+   \text{dim FM} = (n-f+1) \times (n-f+1)
 
 where :math:`n` is the input dimension, and :math:`f` is the filter dimension. 
-For example, in the case illustrated above, the output dimension will be of size :math:`(5-3+1) x (5-3+1)= 3 x 3`.
+For example, in the case illustrated above, the output dimension will be of size (5-3+1) x (5-3+1)= 3 x 3.
 
 
 **Training Convolutional Layers.**
@@ -291,7 +292,9 @@ suitable for fully connected layers, which are typically used for making predict
 As a reminder, the formula for calculating the total number of trainable parameters in each layer 
 is 
 
-:math:`(Filter_Size x Filter_Size x Size_of_input_channel +1 ) x number_of_filters`
+.. math::
+
+   (\text{Filter\_Size} \times \text{Filter\_Size} \times \text{Size\_of\_input\_channel} + 1) \times \text{number\_of\_filters}
 
 
 Solving the Fashion MNIST classification example with CNNs
@@ -390,14 +393,13 @@ Different CNN architectures have emerged in the past, some of the popular ones a
 - AlexNet
 
 
-Each has specific use cases where they can be used. More on the architectural details
-is given in [2]. In this lecture, we will cover some basics of VGG16 and LeNet-5.
+Each has specific use cases where they can be used. In this lecture, we will cover some basics of VGG16 and LeNet-5.
 
 VGG16
 ~~~~~
 
 The VGGNet architecture was proposed by Karen Simonyan and Andrew Zisserman, from the Visual 
-Geometry Group (VGG) at the University of Oxford, in 2014 [3]. 
+Geometry Group (VGG) at the University of Oxford, in 2014. 
 It finished first runner-up in the ImageNet annual competition (ILSVRC) in 2014.
 
 VGGNet has two variants: VGG16 and VGG19. 
@@ -592,31 +594,27 @@ While early CNNs like VGG16 demonstrated the power of deep learning, modern comp
 
 * **Limitations:** Over 80–90% of parameters were concentrated in the final dense layers, causing memory bloat and slow training.
 
-**2. Modern CNN Architecture Paradigms (e.g., ResNet, ConvNeXt)**
-
-* **Residual Connections:** Introduce skip connections ($y = F(x) + x$) to prevent vanishing gradients, allowing networks to scale beyond 100+ layers.
-
-* **Global Average Pooling (GAP):** Replaces heavy dense layers by averaging spatial feature maps into a single vector, drastically cutting parameters.
-
-* **Depthwise Separable Convolutions:** Split spatial filtering and channel mixing (used in MobileNet) to run efficiently on mobile and edge devices.
-
-**3. Real-Time Object Detection (e.g., YOLO)**
+**2. Real-Time Object Detection (e.g., YOLO)**
 
 * Extends classification CNNs to predict both **what** an object is and **where** it is located.
 
 * Processes the entire image in a single forward pass using a fully convolutional backbone, enabling real-time performance (e.g., autonomous driving, video analytics).
 
+**3. Transformer based Vision models ViT**
+
+* Instead of relying on sliding convolutional filters, Vision Transformers use self-attention mechanisms to process an image globally all at once.
+
 .. table:: Evolution of CNN Architectures
    :widths: 25 35 40
 
    +--------------------------+------------------------------------+---------------------------------------+
-   | Era                      | Key Architectural Innovation       | Primary Benefit                       |
+   | Era                            | Key Architectural Innovation       | Primary Benefit                       |
    +==========================+====================================+=======================================+
-   | **Early (VGG16)**        | Small stacked 3x3 filters          | Deeper feature hierarchies            |
+   | **Early (VGG16)**              | Small stacked 3x3 filters          | Deeper feature hierarchies            |
    +--------------------------+------------------------------------+---------------------------------------+
-   | **Modern (ResNet)**      | Skip connections & GAP             | Trains 100+ layers without overfitting |
+   | **Mobile/Edge (YOLO)**         | Efficient backbones & single pass  | Real-time bounding box detection      |
    +--------------------------+------------------------------------+---------------------------------------+
-   | **Mobile/Edge (YOLO)**   | Efficient backbones & single pass  | Real-time bounding box detection      |
+   | **Transformer based (ViT))**   |  Global context understanding      | Faster detection                      |
    +--------------------------+------------------------------------+---------------------------------------+
 
 References and Additional Resources
