@@ -254,6 +254,6 @@
       become_user: "{{ course_user }}"
       ansible.builtin.stat:
         path: "{{ course_home }}/.nix-profile/bin/self-update"
-      register: self-update
+      register: self_update
       failed_when: false
       

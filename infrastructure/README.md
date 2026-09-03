@@ -56,6 +56,8 @@ Insert an email column between `Name` and `Username` and populate each row with 
 
 The first 4 columns can now be pasted into an inventory file named `user-inventory` for configuring Nix on the VMs. Place this file into the same directory as the setup playbook.
 
+See `user-inventory-example` for example of the format.
+
 Finally, run:
 
 ```
