@@ -398,3 +398,151 @@ after sufficient training loops with sufficiently many examples will the model a
     directly into them.
     Some modern transformers take a different approach where, for example, attention leverages position 
     explicitly. 
+
+
+Hans-On 
+-------
+
+We'll use the ``transformers`` library to illustrate some of the above concepts with concrete examples. 
+The ``transformers`` library was developed by HuggingFace, a company that is building an open source, 
+collaborative platform for AI. 
+
+Tokenizers 
+^^^^^^^^^^
+
+We'll begin by illustrating a tokenizer. As mentioned above, the tokenizer converts raw 
+text to a series of (integer) token ids. There are various methods for implementing tokenizers, but 
+it is critical that the exact steps used to tokenize the text for training a model are also used for 
+inference. Thus, in general, we associate a specific tokenizer to each model version.
+
+The ``transformers`` library provides the ``AutoTokenizer`` class for automatically instantiating
+the correct tokenizer for a given model. In the code below, we instantiate a tokenizer associated 
+with the GPT-2 model. This is just for illustration purposes, but note that you can replace the 
+``gpt2`` string with any valid model id from HuggingFace. 
+
+.. code-bloc:: python3
+
+    from transformers import AutoTokenizer
+    model_name = "gpt2"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+We can use ``tokenizer`` to tokenize any piece of text: 
+
+.. code-block:: python3 
+
+    text = "Tokenization breaks text into subword units!"
+    ids = tokenizer(text)
+    print(ids["input_ids"])
+    --> [30642, 1634, 9457, 2420, 656, 850, 4775, 4991, 0]
+
+We can also convert the IDs back to text: 
+
+.. code-block:: python3 
+
+    tokens = tokenizer.convert_ids_to_tokens(ids["input_ids"])
+    print(tokens)
+    --> ['Token', 'ization', 'Ġbreaks', 'Ġtext', 'Ġinto', 'Ġsub', 'word', 'Ġunits', '!']
+
+Note how certain words are broken down into multiple tokens. What do you think is the 
+meaning of the ``Ġ`` character? 
+
+
+Language Embedding 
+^^^^^^^^^^^^^^^^^^^
+Next we compute the language embedding for some token IDs. In this case, we need the actual 
+model because the language embedding is one of the components of the trained model. 
+We'll use the ``AutoModel.from_pretrained`` constructor from ``transformers`` to automatically 
+instantiate a model from the its model ID. As we mentioned before, it is crucial that use the 
+same tokenizer that was used to train the model. 
+
+
+.. code-block:: python3 
+
+    import torch
+    from transformers import AutoTokenizer, AutoModel
+    import torch.nn.functional as F
+
+    # Load tokenizer and model 
+    model_name = "gpt2"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModel.from_pretrained(model_name)
+
+    # Extract just the embedding matrix, i.e., the W_E above 
+    embedding_matrix = model.wte.weight
+
+With the embedding matrix extracted, we can write a short function to compute the embeddings
+of a given word. We use the ``tokenizer.encode`` with ``return_tensors`` just to ensure the 
+token_ids are returned wrapped 
+
+.. code-block:: python3 
+
+    # function to compute the embedding of a word 
+    def get_word_embedding(word: str) -> torch.Tensor:
+        input_ids = tokenizer.encode(word, return_tensors="pt")
+        # Retrieve vector from matrix: shape [1, 768]
+        vector = embedding_matrix[input_ids[0, 0]]
+        return vector
+
+Let's try our function with some examples. Note that we are encoding the words 
+with a single space at the beginning. 
+
+.. code-block:: python3 
+
+    # try with some examples: 
+    # NOTE: we add a space at the beginning. What happens if we remove this?
+    king_emb = get_word_embedding(" king")
+    queen_emb = get_word_embedding(" queen")
+    phone_emb = get_word_embedding(" phone")
+
+    # compute and print cosine similarities 
+    sim_king_queen = F.cosine_similarity(king_emb, queen_emb, dim=0).item()
+    sim_king_phone = F.cosine_similarity(king_emb, phone_emb, dim=0).item()
+    sim_queen_phone = F.cosine_similarity(queen_emb, phone_emb, dim=0).item()
+
+    # print results 
+    # 3. Print Results
+    print("--- Cosine Similarities ---")
+    print(f"king  <-> queen : {sim_king_queen:.4f}  (High Similarity / Small Angle)")
+    print(f"king  <-> phone : {sim_king_phone:.4f}  (Low Similarity / Large Angle)")
+    print(f"queen  <-> phone : {sim_queen_phone:.4f}  (Low Similarity / Large Angle)")
+
+You should see outputs similar to the following: 
+
+.. code-block:: python3 
+
+    --- Cosine Similarities ---
+    king  <-> queen : 0.6573  (High Similarity / Small Angle)
+    king  <-> phone : 0.2040  (Low Similarity / Large Angle)
+    queen  <-> phone : 0.1695  (Low Similarity / Large Angle)    
+
+If we change the input words by removing the leading space (i.e., use "king" instead of " king", etc.), then 
+the similarities between all of the words goes down, for example: 
+
+.. code-block:: python3 
+
+    king_emb = get_word_embedding("king")
+    queen_emb = get_word_embedding("queen")
+    phone_emb = get_word_embedding("phone")
+
+    # compute and print cosine similarities
+    sim_king_queen = F.cosine_similarity(king_emb, queen_emb, dim=0).item()
+    sim_king_phone = F.cosine_similarity(king_emb, phone_emb, dim=0).item()
+    sim_queen_phone = F.cosine_similarity(queen_emb, phone_emb, dim=0).item()
+
+    print("--- Cosine Similarities ---")
+    print(f"king  <-> queen : {sim_king_queen:.4f}  (High Similarity / Small Angle)")
+    print(f"king  <-> phone : {sim_king_phone:.4f}  (Low Similarity / Large Angle)")
+    print(f"queen  <-> phone : {sim_queen_phone:.4f}  (Low Similarity / Large Angle)")
+
+    --> 
+    --- Cosine Similarities ---
+    king  <-> queen : 0.2666  (High Similarity / Small Angle)
+    king  <-> phone : 0.2873  (Low Similarity / Large Angle)
+    queen  <-> phone : 0.1791  (Low Similarity / Large Angle)
+
+This is likely due to the token frequency of " king" and " queen" in the training dataset as compared 
+to that of the same tokens without a space. 
+
+Attention 
+^^^^^^^^^
+
