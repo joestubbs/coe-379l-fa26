@@ -41,7 +41,7 @@ articles, web pages, social media posts, etc. Some common NLP tasks include the 
    first president of the United States?"* Answer: *"George Washington"*.
 5. *Text generation:* for example, filling in the end of a sentence (e.g., autocomplete), 
    filling in masked/blanked out words within sentences, generating entire new sentences from a prompt. Language 
-   translation and question and answer can be thought of as a special case of tex generation. 
+   translation and question and answer can be thought of as a special case of text generation. 
 
 NLP is one of the oldest areas of AI and has a long history dating back at least to the 1950s. 
 One of the first efforts to garner public attention was the Georgetown-IBM experiment in 1954, which 
@@ -171,7 +171,7 @@ so that the word "jump" would map to the same index as the first part of the
 word "jumping". Similarly, the tokenizer might map "Joe's" to two fragments, "Joe", "'s". 
 
 The integer values that the tokens are mapped to are called token IDs. Generally, the values 
-do not have any meaning
+do not have any meaning.
 
 
 Note that the tokenizer is different from the language embedding (the first component depicted 
@@ -279,7 +279,7 @@ the **query**, **key**, and **value** matrices, respectively. The entries
 of these matrices are learned parameters of the model, and each has a different focus: 
 
 * the query represents what the current position is looking for
-* he key represents how another position can be matched
+* the key represents how another position can be matched
 * the value contains the information that is pushed forward into the next layer 
 
 To determine how strongly position :math:`i` should attend to position :math:`j`, the model 
@@ -296,11 +296,11 @@ dimension increases.
 Feed-Forward Network 
 ---------------------
 
-The final major component of the transfoer is a feed-forward neural network, just like we have seen 
+The final major component of the transformer is a feed-forward neural network, just like we have seen 
 in the previous lectures. 
 
-includes a fully connected feed-forward network with 1 hidden layer. These feed-forward networks 
-are exactly like the networks we looked at the beginning of Unit 3. In the original paper, 
+It includes a fully connected feed-forward network with 1 hidden layer. These feed-forward networks 
+are exactly like the ANN networks we looked in previous lectures . In the original paper, 
 two convolutions with kernel size 1, input and output dimensionality of 512, and 
 inner-layer dimensionality of 2048 were used. 
 
