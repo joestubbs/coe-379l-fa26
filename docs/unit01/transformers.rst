@@ -358,9 +358,12 @@ projections of :math:`X` using three matrices, :math:`W_Q, W_K, W_V \in \mathbb{
 the **query**, **key**, and **value** matrices, respectively. The entries 
 of these matrices are learned parameters of the model, and each has a different focus: 
 
-* the query represents what the current position is looking for
-* the key represents how another position can be matched
-* the value contains the information that the current position should push forward into the next layer 
+* the query represents characteristics that the current position is looking for. For example, 
+  *""I am a subject looking for my main verb"*
+* the key represents information contained in the current position that can be used to match with other 
+  positions. For example, *"I am a verb in the past tense at position 4"*
+* the value contains the actual sementic information that the current position should push forward 
+  into the next layer. 
 
 To determine how strongly position :math:`i` should attend to position :math:`j`, the model 
 compares query :math:`q_i` with key :math:`k_j`:
@@ -372,6 +375,10 @@ compares query :math:`q_i` with key :math:`k_j`:
 Intuitively, a dot product is used because it computes a similarity between two vectors.
 The division by :math:`\sqrt{d_k}` keeps the score magnitudes from growing excessively as the vector 
 dimension increases. 
+
+Note that training does not involve the use of datasets that have been constructed to force the roles of 
+the query, key and value above. Rather, these roles or behaviors emerge as a property of the mathematical 
+structure of the attention layer and the use of the optimization algorithm (e.g., Adam with back propagation). 
 
 We are skipping over a number of technical details. For example, the results of the dot product calculation 
 are then passed through softmax to generate attention weights from the raw logits. For those interested 
