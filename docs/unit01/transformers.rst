@@ -637,6 +637,7 @@ to that of the same tokens without a space.
 Attention 
 ^^^^^^^^^
 
+Let's look at an example of attention. To begin, we'll load the tokenizer and model using ``transformers``. 
 
 .. code-block:: python3 
 
@@ -647,7 +648,11 @@ Attention
     model = AutoModel.from_pretrained("gpt2", output_attentions=True)
     model.eval()
 
-    # Stripped down sentence without the leading article
+Let's compute a simple example. We'll use the sentence *"Bank approved the loan"* and look 
+at the attentions for the word *loan*. 
+
+.. code-block:: python3 
+
     text = "Bank approved the loan"
     inputs = tokenizer(text, return_tensors="pt")
 
