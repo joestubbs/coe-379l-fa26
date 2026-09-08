@@ -10,7 +10,12 @@ hallucinations.
 
 By the end of this module, students should be able to: 
 
-1. 
+1. Describe the basic development lifecycle of a foundation model and 
+   understand the difference between training and inference for foundation models
+2. Understand the mechanics of using an HTTP inference server for a foundation model and describe 
+   the OpenAI-compatible HTTP specification. 
+3. Use basic techniques for prompting and recognize a well-formed prompt from a poorly formed one. 
+4. Describe hallucinations   
 
 
 Introduction to Foundation Models 
