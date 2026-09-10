@@ -447,6 +447,7 @@ We can get around this problem by passing ``padding=True``; e.g.,
                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]), 
      'attention_mask': tensor([[1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
                                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])}
+    
 
 What's happened here is that transformers has adding *padding*, i.e., a special token, to the first, shorter 
 input to make it have the same length as the second input --- note the 0s at the end of the first tensor in the 
@@ -484,6 +485,14 @@ input vector had a padding token.
                           [ 101, 1996, 2833, 2001, 2919, 1010, 2025, 2204, 2012, 2035, 1012,  102]]), 
     'attention_mask': tensor([[1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
                               [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])}
+
+
+Let's capture the tensors in an object for later use: 
+
+.. code-block:: python3 
+
+    d4 = tokenizer(["The food was good", "The food was bad, not good at all."], return_tensors='pt', padding=True)
+    tensors = d4['input_ids']
 
 
 Models from Checkpoints and Language Embeddings 
