@@ -691,6 +691,62 @@ Try coding up the following:
         print(f"Sentence: {inputs[i]}; prediction: {predictions[i]}");
 
 
+Instantiating Models and Tokenizers 
+------------------------------------
+
+One final comment: in some cases the ``pipeline`` constructor does not use the correct tokenizer 
+when instantiating the model. For example, look what happens with the following code: 
+
+.. code-block:: python3
+
+    from transformers import pipeline 
+    model_name = "Helsinki-NLP/opus-mt-en-es"
+    translator = pipeline(task="text-generation", model=model_name)
+
+The instantiation works fine, but what happens when we try to use it? 
+
+.. code-block:: python3 
+    translator("Hello, my name is Joe")
+    --> [{'generated_text': 'Hello, my name is Joe SO SO SO SO SO SO SO SO EI SO SO SO EI SO...'}]
+
+The results are not correct at all! The transforms library has not used the correct tokenizer for 
+this model. 
+
+Instead, we can first create the correct tokenizer and then use that to process the text 
+directly before passing it into the model. The key point is that we use ``AutoTokenizer`` to 
+let HFH derive the correct tokenizer for this model based on its metadata 
+(specifically, the `config.json <https://huggingface.co/Helsinki-NLP/opus-mt-en-es/blob/main/config.json?utm_source=chatgpt.com>`_). Similarly, we use ``AutoModelForSeq2SeqLM`` 
+to instantiate the model object from the name. 
+Also, we use ``model.generate()`` directly instead of 
+the ``pipeline`` object. The code is a little more complicated, but it produces the correct results: 
+
+.. code-block:: python3 
+
+    from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+
+    model_name = "Helsinki-NLP/opus-mt-en-es"
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+
+    inputs = tokenizer(
+        "Hello, my name is Joe.",
+        return_tensors="pt",
+    )
+
+    output_ids = model.generate(**inputs)
+
+    translation = tokenizer.decode(
+        output_ids[0],
+        skip_special_tokens=True,
+    )
+
+    print(translation)
+
+    --> Hola, mi nombre es Joe.
+
+
+
 
 Additional References 
 ---------------------
