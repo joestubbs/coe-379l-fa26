@@ -33,7 +33,7 @@ open source projects one can leverage, such as:
 There are also open-source projects that focus on specific document types. For example, for TeX/LaTeX, we have 
 
 * LaTeXML --- https://math.nist.gov/~BMiller/LaTeXML/
-* pylatexen --- https://github.com/phfaist/pylatexenc 
+* pylatexenc --- https://github.com/phfaist/pylatexenc 
 
 Lexical or Sparse Retrieval 
 ----------------------------
@@ -49,7 +49,7 @@ In lexical retrieval, term weighting is an important aspect. Historically, algor
 based on how frequently they appear in a given chunk and were penalized based on how frequently they 
 appeared across the entire corpus. 
 
-BM-25 (Best Match 25), arguably the most commonly used lexical algorithm currently, adds a *term frequency saturation* 
+BM-25, arguably the most commonly used lexical algorithm currently, adds a *term frequency saturation* 
 to prevent very common words from dominating the score. It also leverages *document length normalization* to 
 penalize longer documents.  
 
@@ -59,7 +59,7 @@ or chunk contains a relatively small number of tokens, the system maintains a lo
 
 Strengths of Lexical Retrieval: 
 
-* very efficient --- Such systems can achieve sub-millisecond retrieval speeds across billions of documents 
+* very efficient --- Such systems have been known to achieve sub-millisecond retrieval speeds across billions of documents 
   because the engine only evaluates documents that contain at least one query term.
 * transparency --- Matches are computed directly based on token keywords making the algorithm very transparent. 
 * Works well with identifiers and other "meaningless" tokens --- Given an id, like a UUID, that has no semantic 
@@ -93,8 +93,8 @@ Weaknesses:
 
 * Can fail to match with "meaningless" identifiers
 * Opaqueness --- Results are harder to interpret 
-* Development complexity --- Embedding models must be trained, which can be expensive, and even worse, must be retrained if the 
-  corpus changes significantly. 
+* Development complexity --- Embedding models must be trained, which can be expensive, and even worse, might need to 
+  be retrained if the corpus changes significantly. 
 * The overall performance of search tends to be slower and more computationally expensive that lexical retrieval. 
 
 Hybrid Retrieval 
@@ -102,7 +102,7 @@ Hybrid Retrieval
 
 Modern RAG systems often leverage a hybrid retrieval system that conducts both a sparse and a dense search in 
 parallel, followed by a fusion step to combine the two result lists into a single list, and finally a 
-reranker applies a more expensive relevance model to the 
+reranker applies a more expensive query-passage relevance model to the highest-ranked candidates.
 
 
 .. figure:: ./images/Hybrid-search.png 
