@@ -26,8 +26,8 @@ for example, a model that could predict the tensile strength of a polymer or a C
 the article of clothing contained in a 28x28 grey-scale image. The model architecture and the dataset 
 used to train the model were both designed with only a single task in mind. 
 
-The term *foundation model* was popularized in 2021 to describe models trained on broad data at 
-scale that can be adapted to many downstream tasks. The underlying approach developed from 
+The term *foundation model* was popularized in 2021 to describe models trained on a broad set of data and at 
+a scale such that the resuling model can be adapted to many downstream tasks. The underlying approach developed from 
 earlier work on large pretrained models, so 2021 marks the emergence of the terminology rather 
 than a sharp beginning of the technology.
 
@@ -121,7 +121,7 @@ of architectural choices, including:
 * hidden dimension -- The size of the token representation passed between transformer blocks. A 
   transformer's feed-forward block accepts and returns vectors of this dimension, but commonly 
   expands them into a larger intermediate dimension internally.
-* number of layers -- Total number of layers 
+* number of layers -- Total number of layers in the model. 
 * attention mechanism -- Variants including masked/not masked (encoder/decoder), number of heads, etc. 
 
 Additionally, a training objective must be chosen. For example, a decoder-only language model (masked attention) 
@@ -333,6 +333,100 @@ and the HTTP response might look like:
     }    
 
 
+TACC-Hosted HTTP Inference Server 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TACC hosts a number of LLM inference servers for use by the research community, and one can use the ``requests`` library 
+to make direct calls to them if one has an active allocation. 
+
+.. code-block:: python 
+
+
+    import os 
+    import requests 
+
+    MODEL = "MiniMax-M2.7"
+    BASE_URL = "https://ai.tejas.tacc.utexas.edu/v1" 
+    API_KEY = os.environ.get("API_KEY")
+
+    def ask_model_question(question: str,  url: str = BASE_URL, model: str = MODEL):
+        """
+        This function implements chat completion endpoint using only requests.
+        """
+        url = f"{url}/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json",
+        }
+        data = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {
+                    "role": "user",
+                    "content": f"Answer the following question. Question: {question}",
+                },
+            ],
+        }
+        r = requests.post(url, json=data, headers=headers)
+        r.raise_for_status()
+        return r.json()
+
+And a  typical response: 
+
+.. code-block:: python3 
+
+    rsp = ask_model_question("Who won the 2026 World Cup?")
+
+    --> rsp 
+
+    {'id': '0ac87981-9365-426b-be3c-f3318c047815',
+    'created': 1789434167,
+    'model': 'MiniMax-M2.7',
+    'object': 'chat.completion',
+    'system_fingerprint': 'fastcoe',
+    'choices': [{'finish_reason': 'stop',
+    'index': 0,
+    'message': {'content': "\n\nThe 2026 FIFA World Cup hasn't taken place yet. It's scheduled to be held in the United States, Canada, and Mexico from June to July 2026. Therefore, there is no winner yet.\n\nThe most recent World Cup was the **2022 FIFA World Cup in Qatar**, which was won by **Argentina**, defeating France in the final.",
+        'role': 'assistant',
+        'reasoning_content': "The user is asking about the 2026 World Cup winner. However, the 2026 FIFA World Cup hasn't happened yet - it's scheduled to take place in 2026 in the United States, Canada, and Mexico. The most recent World Cup was the 2022 FIFA World Cup in Qatar, which was won by Argentina.\n\nI should let the user know that the 2026 World Cup hasn't taken place yet, so there's no winner to report.\n",
+        'provider_specific_fields': {'reasoning': "The user is asking about the 2026 World Cup winner. However, the 2026 FIFA World Cup hasn't happened yet - it's scheduled to take place in 2026 in the United States, Canada, and Mexico. The most recent World Cup was the 2022 FIFA World Cup in Qatar, which was won by Argentina.\n\nI should let the user know that the 2026 World Cup hasn't taken place yet, so there's no winner to report.\n",
+        'refusal': None,
+        'reasoning_content': "The user is asking about the 2026 World Cup winner. However, the 2026 FIFA World Cup hasn't happened yet - it's scheduled to take place in 2026 in the United States, Canada, and Mexico. The most recent World Cup was the 2022 FIFA World Cup in Qatar, which was won by Argentina.\n\nI should let the user know that the 2026 World Cup hasn't taken place yet, so there's no winner to report.\n"}},
+    'provider_specific_fields': {}}],
+    'usage': {'completion_tokens': 165,
+    'prompt_tokens': 38,
+    'total_tokens': 203,
+    'completion_tokens_details': {'reasoning_tokens': 92},
+    'completion_tokens_after_first_per_sec': 358.9585749905285,
+    'completion_tokens_after_first_per_sec_first_ten': 359.96147242487086,
+    'completion_tokens_after_first_per_sec_graph': 359.96147242487086,
+    'completion_tokens_per_sec': 292.49847212419115,
+    'end_time': 1789434167.4933836,
+    'is_last_response': True,
+    'start_time': 1789434166.9292781,
+    'stop_reason': 'stop',
+    'time_to_first_token': 0.10722827911376953,
+    'time_to_first_token_graph': 0.10451936721801758,
+    'total_latency': 0.5641055107116699,
+    'total_tokens_per_sec': 359.8617566133988}}
+
+
+We can locate the "answer" with the following code: 
+
+.. code-block:: python3
+
+    rsp['choices'][0]['message']['content']
+    
+    -> "The 2026 FIFA World Cup hasn't taken place yet. It's scheduled to be held in the United States, 
+       Canada, and Mexico from June to July 2026. Therefore, there is no winner yet.
+       The most recent World Cup was the **2022 FIFA World Cup in Qatar**, which was won by **Argentina**, 
+       defeating France in the final"
+
+What is happening with this reply from the model? 
+
+You will look more closely at using HTTP inference services in the next reading. 
+
+
 Chat Templates 
 ^^^^^^^^^^^^^^
 We know from our study of transformers that a model doesn't have a concept of "roles", "messages", etc. It 
@@ -465,6 +559,39 @@ corresponding to each of the three major phases of the model lifecycle:
   or low-probability token early in generation distorts the attention context for all subsequent steps, 
   compounding errors further down the sequence. Moreover, strategies like sampling with temperature 
   introduce variance to increase creativity at the increased risk of additional hallucinations. 
+
+Consider the following example: 
+
+.. .. code-block:: python3 
+
+..     rsp = ask_model_question("Give me three papers from 2022 on the Mixture of Experts architecture and be sure to include authors, title and a full DOI for each ")
+..     answer = rsp['choices'][0]['message']['content']
+
+
+.. code-block:: python3 
+
+    rsp = ask_model_question("Give me three papers from 2022 on the Mixture of Experts architecture and be sure to include authors, title and a full DOI for each ", model="Llama-4-Maverick-17B-128E-Instruct")
+    answer = rsp['choices'][0]['message']['content']
+    print(answer)
+
+    Here are three papers from 2022 on the Mixture of Experts (MoE) architecture:
+
+    1. **Authors:** William Fedus, Barret Zoph, and Noam Shazeer.  
+    **Title:** *Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity*.  
+    **DOI:** [10.48550/arXiv.2101.03961](https://doi.org/10.48550/arXiv.2101.03961) (Published in the Journal of Machine Learning Research, 2022).
+
+    2. **Authors:** Dmitry Lepikhin, HyoukJoong Lee, Yuanzhong Xu, Dehao Chen, Orhan Firat, Yanping Huang, Maxim Krikun, Noam Shazeer, and Zhifeng Chen.  
+    **Title:** *GShard: Scaling Giant Models with Conditional Computation and Automatic Sharding*.  
+    **DOI:** [10.48550/arXiv.2006.16668](https://doi.org/10.48550/arXiv.2006.16668) (Published in the Proceedings of Machine Learning Research, 2021; conference paper often cited in 2022 contexts).
+
+    3. **Authors:** Sebastian Borgeaud, Arthur Mensch, Jordan Hoffmann, Trevor Cai, Eliza Rutherford, Katie Millican, George van den Driessche, Jean-Baptiste Lespiau, Bogdan Damoc, Aidan Clark, Diego de Las Casas, Aurelia Guy, Jacob Menick, Roman Ring, Tom Hennigan, Saffron Huang, Loren Maggiore, Chris Jones, Albin Cassirer, Andy Brock, Michele Piccolini, and others.  
+    **Title:** *Improving Language Models by Retrieving from Trillions of Tokens*.  
+    **DOI:** [10.48550/arXiv.2112.04426](https://doi.org/10.48550/arXiv.2112.04426) (Published in the Proceedings of the 39th International Conference on Machine Learning, 2022).
+
+    These papers represent key advancements in MoE architecture, focusing on scaling, efficiency, and application in large language models.
+
+Is the result reliable? 
+
 
 A central question we wish to tackle this semester is how can we reduce hallucination and to what extent 
 can we give formal proofs of correctness of our mitigation strategies?
