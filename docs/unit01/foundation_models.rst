@@ -1,6 +1,6 @@
 Foundation Models 
 =================
-In this module we introduce foudnation models, focusing primarily on large language models (LLMs). 
+In this module we introduce foundation models, focusing primarily on large language models (LLMs). 
 We will discuss the basic development lifecycle of foundation models, including data collection 
 and curation, architecture and training objectives, pre-training, post-training, and evaluation. 
 We will distinguish training from inference and describe foundation model inference services, including 
@@ -99,7 +99,7 @@ The following list of large sources of texts have been used to train LLMs:
 * Common Crawl: An open repository of web crawl data maintained by the non-profit of the same name. 
   The Feb/March 2024 crawl contains 3.16 billion pages and is over 90 TB compressed. [5]
 * Colossal Clean Crawl Corpus (C4): a filtered/cleaned up version of the Common Crawl 
-* WebText: Introduced by OpenAI in the GPT-3 paper [4], it analyzed and scraped outbound Reddit links deemed to 
+* WebText: Introduced by OpenAI in the GPT-2 paper [4], it analyzed and scraped outbound Reddit links deemed to 
   be of high quality and then applied some filtering/post-processing (e.g., deduplication) to clean it up. 
   About 8M documents in total, 40GB of text. 
 * Wikipedia: About 60M pages, 22GB compressed. 
@@ -504,3 +504,12 @@ an LLM might return a JSON object like follows:
 Structured responses will allow us check for required versus optional fields, the types of 
 each field, and so on. Moreover, with sufficient structure, we will be able to validate aspects 
 of the response using deterministic tools. 
+
+Additional References 
+----------------------
+1. Vaswani, et al. "Attention Is All You Need." July, 2017. https://arxiv.org/abs/1706.03762
+2. MIT 6.S191: Recurrent Neural Networks, Transformers, and Attention. http://introtodeeplearning.com
+3. Radford, et al. Language Models are Unsupervised Multitask Learners. https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf 
+4. Hoffman et al. Training Compute-Optimal Large Language Models. March, 2022. https://arxiv.org/abs/2203.15556. 
+5. Common Crawl. Feb-March 2024 Data. https://data.commoncrawl.org/crawl-data/CC-MAIN-2024-10/index.html
+6. C4 (Colossal Clean Crawled Corpus). https://paperswithcode.com/dataset/c4
