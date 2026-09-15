@@ -26,9 +26,10 @@ for example, a model that could predict the tensile strength of a polymer or a C
 the article of clothing contained in a 28x28 grey-scale image. The model architecture and the dataset 
 used to train the model were both designed with only a single task in mind. 
 
-Foundation models, which have emerged only recently, say within the last 6 or 7 years, are fundamentally different. 
-They are models that have been trained on a wide variety of data 
-and at such a sufficient scale that they can be adapted or applied to many different tasks.
+The term *foundation model* was popularized in 2021 to describe models trained on broad data at 
+scale that can be adapted to many downstream tasks. The underlying approach developed from 
+earlier work on large pretrained models, so 2021 marks the emergence of the terminology rather 
+than a sharp beginning of the technology.
 
 A foundation model is not necessarily a language model. Foundation models can operate on text, images, 
 audio, biological sequences, scientific data, or combinations of several modalities. In this module though, 
@@ -117,17 +118,21 @@ of architectural choices, including:
 
 * parameter count -- Total number of trainable parameters in the model 
 * context length -- The maximum size (number of tokens) of a single input
-* hidden dimension -- The embedding dimension and, equivalently, the size of the input dimension of the feed-forward 
-  network. 
+* hidden dimension -- The size of the token representation passed between transformer blocks. A 
+  transformer's feed-forward block accepts and returns vectors of this dimension, but commonly 
+  expands them into a larger intermediate dimension internally.
 * number of layers -- Total number of layers 
 * attention mechanism -- Variants including masked/not masked (encoder/decoder), number of heads, etc. 
 
 Additionally, a training objective must be chosen. For example, a decoder-only language model (masked attention) 
-commonly uses *autoregressive next-token prediction* as the objective function. Autoregressive next-token 
-prediction is a framework where a language model predicts the single most likely next token in a 
-sequence given all previous tokens, feeding its own previous outputs back in as inputs for subsequent steps.
-This method is a self-supervised learning method because the targets are constructed automatically from the 
-data. 
+commonly uses *autoregressive next-token prediction* as the objective function. 
+In autoregressive next-token training, the model receives the preceding tokens and produces a 
+probability distribution over the vocabulary. The observed next token is the target. To generate 
+an actual prediction, a *decoding procedure* selects or samples a token from the predicted 
+distribution and appends it to the sequence. This process is then repeated. 
+
+Note aslo that this method is a self-supervised learning method because the targets are 
+constructed automatically from the data. 
 
 Pre-training 
 ^^^^^^^^^^^^
@@ -135,8 +140,9 @@ During pretraining, the model processes an enormous numbers of token sequences.
 The process is similar to the the ANNs we have studied: input tokens are passed through the network to produce 
 predictions, a loss measuring the prediction error is computed, and an optimizer updates the parameters.
 The final result is sometimes referred to as a *base model*. A base language model has learned statistical 
-patterns from a massive amount of text, but it likely lacks a number of desirable capabilities such as 
-following instructions, mathematical reasoning and planning, etc. 
+patterns from a massive amount of text, but it is not necessarily optimized to follow user instructions , 
+maintain conversational roles, refuse inapprpriate requests, produce outputs in a required format, 
+etc. 
 
 To the best of our knowledge, decoder-only models that leverage autoregressive next-token prediction have emerged 
 as the dominant architecture for base foundation language models. The reason is that they can be trained on a 
@@ -406,6 +412,9 @@ into more randomness.
 
     In the OpenAI-compatible API, it is common for a temperature of 0 to serve as a switch to 
     turn off sampling altogether and turn on a deterministic mechanism such as greedy decoding. 
+    Note that, even when temperature is set to 0 and greedy decoding is used, identical outputs 
+    are not guaranteed across runs. There various reasons for this, including hardware architectures
+    and server configuration. 
 
 
 Response Length and Stopping Controls 
@@ -483,7 +492,7 @@ likelihood of certain kinds of hallucinations, as we will see.
 Preview: Structured Responses 
 -----------------------------
 
-One of the key strategies we will use to reduce hallucination and improve reliability is the concept 
+One of the strategies we will use to reduce hallucination and improve reliability is the concept 
 of *structured responses*. Instead of asking the LLM to generate free-form text, we require that it 
 return a response conforming to some schema. For example, we could require a JSON object conforming to 
 a JSONSchema. 

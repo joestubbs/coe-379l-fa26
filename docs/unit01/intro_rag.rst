@@ -13,12 +13,15 @@ By the end of this module, students should be able to:
 Motivation for Retrieval Augmented Generation 
 ---------------------------------------------
 
-Recall from the previous week we established the following about foundation models: 
+Recall from the previous module we established the following about foundation models: 
 
-1. A foundation model generates from its parameters and current context. 
-2. Its parameters are not like a database of facts, and the responses they produce are unreliable.
+1. A foundation model generates output from its parameters and current context. 
+2. Once training completes, the model's parameters are typically frozen and not updated. 
+3. Its parameters are not like a database of facts and the responses they produce can be  
+   unreliable.
+4. The model is mostly opaque and "reasoning" behind the responses cannot easily be discerned. 
 
-We will use retrieval to complement the model with the following: 
+We will use *retrieval* to complement the model with the following: 
 
 * information absent from model training
 * information that changes over time
