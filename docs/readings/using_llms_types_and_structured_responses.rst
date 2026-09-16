@@ -310,9 +310,7 @@ First ask the model without supplying the publication page:
 .. code-block:: python3
 
     BIBLIOGRAPHY_QUESTION = """
-    According to Dan Jurafsky's author-maintained publication page, list every
-    work in its 2025 section titled "Journal Articles, Book Chapters, and
-    Conference Papers." For each work, give the title, all coauthors other than
+    Llist every paper authored by Dan Jurafsky in 2025. For each work, give the title, all coauthors other than
     Dan Jurafsky, and the publication year. If you cannot determine the complete
     list, say so explicitly.
     """.strip()
@@ -335,36 +333,8 @@ First ask the model without supplying the publication page:
     model_only_answer = ask_from_model_knowledge()
     print(model_only_answer)
 
-Do not assume in advance that the model will invent papers. It might fabricate plausible records, return a
-mixture of correct and incorrect records, provide an incomplete list, or appropriately state that it cannot
-recover the requested post-cutoff bibliography. Each is an observation about this invocation.
+How does the model do? 
 
-Classifying Bibliography Errors
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-For this task, classify the result at the level of individual paper records:
-
-``supported record``
-    The title, coauthor list, and year agree with one record in the captured source.
-
-``incorrect field``
-    The response appears to refer to a real source record but changes its title, authors, or year.
-
-``unsupported record``
-    No corresponding paper appears in the defined 2025 source set.
-
-``omission``
-    A source record is absent from a response that purports to be complete.
-
-``duplicate``
-    The same source record appears more than once.
-
-``appropriate abstention``
-    The response accurately states that the available information is insufficient to provide the complete list.
-
-Only an incorrect or unsupported factual assertion is a hallucination under our operational definition. An
-omission primarily reduces completeness, and a justified abstention avoids hallucination but does not complete
-the user's task.
 
 Experiment 2: The Complete Raw Page
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
