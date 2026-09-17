@@ -24,7 +24,7 @@ in various theoretical fields, including mathematics, computer science, physics,
    :caption: Required Readings:
 
    readings/datascience.rst
-   .. readings/using_llms_types_and_structured_responses.rst 
+   readings/using_llms_types_and_structured_responses.rst 
 
 Additional Resources
 --------------------
