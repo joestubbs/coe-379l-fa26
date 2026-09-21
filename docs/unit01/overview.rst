@@ -17,5 +17,5 @@ with the computing environment at TACC that they will use for completing class w
    transformers
    hands_on_transformers
    foundation_models
-..    intro_rag 
-..    rag_engineering
+   intro_rag 
+   rag_engineering

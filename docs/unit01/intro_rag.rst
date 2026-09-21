@@ -17,48 +17,59 @@ By the end of this module, students should be able to:
 * implement a small lexical retriever and inspect its results
 * state the Formal-Lit-QA problem and its desired behavior
 
-We will use the same OpenAI-compatible chat-completions endpoint introduced in the previous module.
+We will use the same OpenAI-compatible chat-completions endpoint introduced in the previous module and the reading.
 The following helper accepts a complete list of messages so that later examples can insert retrieved
 evidence into the prompt.
 
 .. code-block:: python
 
     import os
-    import requests
 
-    MODEL = os.environ.get("TACC_MODEL", "MiniMax-M2.7")
-    BASE_URL = "https://ai.tejas.tacc.utexas.edu/v1"
-    API_KEY = os.environ.get("API_KEY")
+    from openai import OpenAI
 
-    def chat(messages: list[dict[str, str]], model: str = MODEL) -> str:
-        """Call the TACC OpenAI-compatible chat-completions endpoint."""
-        if not API_KEY:
-            raise RuntimeError("Set the API_KEY environment variable before calling the model.")
+    BASE_URL = os.environ["TACC_LLM_BASE_URL"]
+    TAPIS_JWT = os.environ["TAPIS_JWT"]
+    MODEL = os.environ["TACC_LLM_MODEL"]
 
-        response = requests.post(
-            f"{BASE_URL}/chat/completions",
-            headers={
-                "Authorization": f"Bearer {API_KEY}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": model,
-                "messages": messages,
-                "temperature": 0,
-            },
-            timeout=90,
-        )
-        response.raise_for_status()
-        return response.json()["choices"][0]["message"]["content"]
+    client = OpenAI(
+        base_url=BASE_URL,
+        api_key=TAPIS_JWT,
+    )
 
-    def ask_model_question(question: str, model: str = MODEL) -> str:
-        return chat(
-            [
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": question},
-            ],
+    def generate_text_rsp(
+        messages: list[dict[str, str]],
+        *,
+        model: str = MODEL,
+        temperature: float = 0.0,
+        max_tokens: int = 300,
+    ):
+        completion = client.chat.completions.create(
             model=model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
         )
+
+        content = completion.choices[0].message.content
+        if content is None:
+            raise RuntimeError("The inference service returned no message content.")
+
+        return content, completion
+
+    def ask_model(question, *, temperature: float = 0.0) -> str:
+        messages = [
+            {
+                "role": "user",
+                "content": question,
+            }
+        ]
+        answer, rsp= generate_text_rsp(
+            messages,
+            temperature=temperature,
+            max_tokens=4000,
+        )
+        return answer, rsp.usage.total_tokens        
+
 
 Motivation for Retrieval Augmented Generation 
 ---------------------------------------------
@@ -101,7 +112,7 @@ For example, a model cannot derive the current contents of a private account fro
 
 .. code-block:: python
 
-    ask_model_question("How many private Tapis systems can I currently access?")
+    ask_model("How many private Tapis systems can I currently access?")
 
 An appropriate response is to say that the model lacks access. If our application is authorized to
 query the relevant Tapis service, however, it could retrieve the current information and place it in
@@ -111,7 +122,7 @@ Similarly, models by themselves are not general-purpose applications:
 
 .. code-block:: python3 
 
-   ask_model_question("What day is today?", model="Llama-4-Maverick-17B-128E-Instruct")
+   ask_model("What day is today?", model="Llama-4-Maverick-17B-128E-Instruct")
 
    --> "I'm not able to tell you what day it is today because I don't have access to a 
    calendar or clock and I'm not able to look up the current date. However, I can 
@@ -142,145 +153,6 @@ not a substitute for training or fine-tuning. It also does not guarantee correct
 may select poor evidence, and the generator may ignore or misinterpret good evidence.
 
 
-
-
-.. Second, their autoregressive next-token prediction behavior is based only on their training data. 
-.. If you ask them a question about something that was not in their training data, they 
-.. have no way of generating the answer. 
-
-.. For example, Meta lists the training or knowledge cutoff date for teh the Llama-4-Maverick model 
-.. as August 31, 2024; you can find this on the `model card <https://developer.meta.com/ai/docs/model-cards-and-prompt-formats/llama4/>`_. 
-
-.. But that means if we ask it a question about an event that occurred after that date, it won't 
-.. know about it. 
-
-.. .. code-block:: python3 
-
-..     ask_model_question("Who won the 2024 US presidential election?", model="Llama-4-Maverick-17B-128E-Instruct")
-
-..     -> The 2024 US presidential election has not yet occurred. It is scheduled to take place on November 5, 2024. 
-..     Therefore, there is no winner to report at this time.'
-
-.. Even for topics that the models see during training, results can be unreliable. 
-.. For example, my group has been developing a project called Tapis, an HTTP API platform for research computing. 
-.. Llama 4 saw information about Tapis in its training data, and it can answer a general question 
-.. reasonably well:
-
-.. .. code-block:: python3: 
-
-..   ask_model_question("What is the Tapis API? ", model="Llama-4-Maverick-17B-128E-Instruct")
-
-..   --> The Tapis API, formerly known as the iPlant Collaborative API, is a RESTful API that provides a unified 
-..   interface to a variety of cyberinfrastructure resources. It is designed to support scientific research and 
-..   discovery by providing a simple, standardized way to access and manage various types of data, computational 
-..   resources, and services.
-
-..   The Tapis API is part of the Tapis framework, which is an open-source, community-driven project that 
-..   aims to provide a comprehensive platform for scientific research and discovery. The Tapis 
-..   framework includes a range of components, including the Tapis API, that work together to provide a 
-..   robust and scalable platform for managing and analyzing large datasets, executing computational workflows, 
-..   and more.
-
-
-.. But when asked a more detailed question, the results are less reliable: 
-
-.. .. code-block:: python3: 
-
-..     ask_model_question("How do I use the Tapis python library to generate a JWT?", model="Llama-4-Maverick-17B-128E-Instruct")
-
-..     --> 
-
-..     To generate a JWT (JSON Web Token) using the Tapis Python library, you will first need to ensure that you 
-..     have the Tapis library installed. If you haven't installed it yet, you can do so using pip:
-
-..     ```bash
-..     pip install tapis-python
-..     ```
-
-..     However, it seems there might be a confusion or a need for clarification because the specific 
-..     library named `tapis-python` is not a widely recognized or standard library for interacting with 
-..     Tapis (formerly known as Aware IM or other systems named Tapis). Assuming you're referring to 
-..     a library related to Tapis, a cyberinfrastructure platform, I'll provide a general approach to 
-..     generating a JWT, which typically involves using a library like `requests` for making HTTP 
-..     requests to the authentication service or using a specific SDK if available.
-
-..     For Tapis specifically, if you're using the Tapis V3 API, you would typically interact with it 
-..     using the `tapis3-python` client or directly making HTTP requests.
-
-..     Here's a simplified example of how you might generate a JWT using the Tapis Python client 
-..     (`tapis3-python`), assuming that's the correct library you're referring to:
-
-..     1. **Install the Tapis3 Python Client**
-
-..     First, ensure you have the correct client installed. You can install it via pip:
-
-..     ```bash
-..     pip install tapis3-python
-..     ```
-
-..     2. **Generate a JWT**
-
-..     To generate a JWT, you typically need to authenticate with the Tapis service. Here's a simplified example:
-
-..     ```python
-..     from tapis3_client import Tapis
-
-..     # Initialize the Tapis client
-..     tapis = Tapis(
-..         base_url='https://your.tapis.instance.url',
-..         username='your_username',
-..         password='your_password'
-..     )
-
-..     try:
-..         # Authenticate and get a JWT token
-..         tapis.get_tokens()
-..         jwt_token = tapis.access_token.access_token
-        
-..         print("JWT Token:", jwt_token)
-..     except Exception as e:
-..         print("Failed to obtain JWT:", str(e))
-..     ```
-
-..     In this example, replace `'https://your.tapis.instance.url'`, `'your_username'`, and `'your_password'` 
-..     with your actual Tapis instance URL, username, and password.
-
-..     This code snippet initializes a Tapis client, authenticates using your credentials, and retrieves a 
-..     JWT token, which is then printed out.
-
-..     If you're directly using an authentication service or a different library, the process might vary. 
-..     Always refer to the specific documentation of the library or service you're interacting with for 
-..     the most accurate and up-to-date instructions.
-
-.. And of course, an AI model can never know the answers to questions involving private data that 
-.. it did not see and is regularly changing: 
-
-..   .. code-block:: python3 
-
-..     ask_model_question("How many private Tapis systems do I have access toT?", model="Llama-4-Maverick-17B-128E-Instruct")
-
-..     --> "I don't have access to your personal information or specific details about your access 
-..     to private Tapis systems. To determine the number of private Tapis systems you have access to, 
-..     I recommend checking your account settings or contacting the relevant support team directly. 
-..     They should be able to provide you with the most accurate and up-to-date information."
-
-
-.. RAG, or just *retrieval* for short, is a method for attempting to overcome these shortcomings 
-.. by providing information to the model directly in the prompt that is relevant to the input. 
-
-.. We will use *retrieval* to complement the model with the following:
-
-.. * information absent from model training
-.. * information that changes over time
-.. * private or domain-specific information
-.. * evidence that users must be able to inspect
-
-.. The goal with RAG is to provide high-quality evidence to the model to improve the quality of the 
-.. results. A key point is that RAG retrieves information for **each user query** and injects it 
-.. **as part of the prompt**. 
-.. RAG is not a training or fine-tuning procedure. It does not change the models weights. 
-.. Additionally, RAG does not guarantee that the model will use the supplied evidence correctly or be free of 
-.. hallucinations. 
 
 The Basic RAG Pipeline 
 ----------------------
