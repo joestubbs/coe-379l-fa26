@@ -409,9 +409,9 @@ When we call ``fit_transform``:
     ]
 
     vectorizer = TfidfVectorizer(
-        lowercase=True,
-        stop_words="english",
-        ngram_range=(1, 2),
+        lowercase=True,       # convert to lowercase 
+        stop_words="english", # ignore very common English users like the, and
+        ngram_range=(1, 2),   # extract unigrams (single words) and bigrams (two-word pairs)
     )
 
     chunk_matrix = vectorizer.fit_transform(chunk_texts)
@@ -437,17 +437,18 @@ features in common.
         k: int = 3,
         minimum_score: float = 0.0,
     ) -> list[dict]:
-        query_vector = vectorizer.transform([query])
-        scores = cosine_similarity(
+        query_vector = vectorizer.transform([query]) # transform the query 
+        
+        scores = cosine_similarity(                  # compare query with chunks using cosine sim
             query_vector,
             chunk_matrix,
         ).ravel()
 
-        ranked_indices = np.argsort(scores)[::-1]
+        ranked_indices = np.argsort(scores)[::-1]    # rank the scores
 
         results = []
 
-        for index in ranked_indices:
+        for index in ranked_indices:                 # ignore scores that don't meet the min 
             score = float(scores[index])
 
             if score <= minimum_score:
@@ -460,7 +461,7 @@ features in common.
                 }
             )
 
-            if len(results) == k:
+            if len(results) == k:                    # return the best k scores
                 break
 
         return results
