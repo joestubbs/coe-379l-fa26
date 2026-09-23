@@ -1,8 +1,9 @@
 RAG Engineering
 ===============
 
-The previous module introduced the end-to-end RAG data flow. This module examines the engineering
-decisions inside that data flow: how heterogeneous sources become a common record format, how several
+The previous module introduced the two end-to-end subsystems with RAG -- *ingestion* and *retrieval*. 
+This module takes a deeper dive at the engineering decisions that go into each subsystem. 
+We will look at concrete implementations for how heterogeneous sources become a common record format, how several
 retrieval methods produce ranked candidates, how ranked lists can be combined, and how retrieval can
 be evaluated independently of answer generation.
 
@@ -28,18 +29,16 @@ application would not need to be concerned with different source document types.
 A common architecture therefore uses a family of
 source adapters followed by a shared intermediate representation:
 
-.. math::
+.. figure:: ./images/RAG-ingest.png 
+    :width: 800px
+    :align: center
 
-    \text{PDF, HTML, Markdown, TeX, OCR}
-    \rightarrow
-    \text{format-specific adapters}
-    \rightarrow
-    \text{common records}
-    \rightarrow
-    \text{indexes}
+    RAG ingestion architecture
 
-Source adapters should preserve meaningful structure rather than returning only a single flat string.
-Different formats present different challenges:
+
+Also, as we mentioned last time, the source adapters should preserve meaningful structure in the 
+original documents. Different formats use different methods for encoding structure, which 
+present different challenges:
 
 * PDF stores positioned layout elements, so extracted text may have incorrect reading order, missing
   columns, or detached captions.
@@ -53,11 +52,19 @@ Different formats present different challenges:
   ordinary paragraphs.
 
 
-Production-grade parsing is a substantial engineering effort. General-purpose projects include
-`Docling <https://github.com/docling-project/docling>`_ and
-`Apache Tika <https://tika.apache.org/>`_. TeX-specific options include
-`LaTeXML <https://math.nist.gov/~BMiller/LaTeXML/>`_ and
-`pylatexenc <https://github.com/phfaist/pylatexenc>`_. 
+Production-grade parsing is a substantial engineering effort. There are a number of high-quality, open-source 
+projects that provide general-purpose parers, including: 
+
+* `Docling <https://github.com/docling-project/docling>`_ -- Provides support for a number of different text, audio 
+  and image formats, including  PDF, DOCX, PPTX, XLSX, HTML,WAV, MP3, WebVTT, Box Notes, 
+  email formats (EML, MSG), images (PNG, TIFF, JPEG, ...), LaTeX, DocLang, plain text, and more. 
+* `Apache Tika <https://tika.apache.org/>`_-- supports metadata extraction over from over a thousand different file types. 
+
+There are also projects focused on parsers for specific formats. For example, TeX-specific options include:
+
+* `LaTeXML <https://math.nist.gov/~BMiller/LaTeXML/>`_ -- Used to create the Digital Library of Mathematical 
+  Functions (`DLMF <https://dlmf.nist.gov/>`_), and many other projects. 
+* `pylatexenc <https://github.com/phfaist/pylatexenc>`_ -- provides simple LaTeX parsing through a high-quality Python API. 
 
 In this course, we will focus on the high-level interface design that parsers should adhere to 
 in order to satisfy the requirements of the larger application. 
@@ -89,20 +96,34 @@ make the interface explicit and allows for validating records before they enter 
             default_factory=dict
         )
 
-Several fields that may look redundant serve different purposes:
+Several fields that may look redundant, but they serve different purposes:
 
 * ``chunk_id`` provides a unique identifier for a single chunk, i.e., a single retrievable unit.
+* ``document_id`` provides a unique identifier for the corresponding document that contains this chunk. This 
+  amounts to a *relation* between the chunk and the document. 
 * ``document_version`` identifies the source document version from which it was extracted.
-* ``ordinal`` preserves source order and helps reconstruct neighboring context.
+* ``source_uri`` identifies the source document uniquely. 
+* ``source_type`` describes the type of document that the chunk belongs to. 
+* ``section_path`` contains a list of all headings that the chunk belongs (i.e., one at each level).
+* ``ordinal`` records the chunk's position within this version of the
+  document. It can be used to restore source order or to retrieve neighboring
+  chunks when additional context is needed. Ordinals are normally unique only
+  within a document version, not across the entire corpus.
 * ``content_hash`` can be used to detect whether the normalized content changed.
-* ``source_uri`` and ``section_path`` can be used to resolve a chunk to its source document as part of, 
-  for example, a validation step. 
+
+
+Note:  ``source_uri`` and ``section_path`` can be used to resolve a chunk to its content directly in the 
+source document as part of, for example, a validation step.
+
+.. admonition:: Question
+
+  What is the significance of the use of the ``Literal`` for ``source_type``? Is there another Python type 
+  that could be used here? 
 
 It is important that the identifiers like ``chunk_id``be *stable*, that is, not changing throughout 
 the entire lifetime of the application. For example, a chunk identifier based only on array position may change
 whenever a preceding paragraph is inserted. A chunk identifier based only on the content hash changes
-whenever a typo is corrected. A production system may therefore maintain both a stable logical ID and
-a version-specific content hash.
+whenever a typo is corrected. A stable identifier is usually based on an 
 
 A Minimal Structure-Aware Parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -114,64 +135,83 @@ records conforming to the schema.
 
 .. code-block:: python
 
-    import hashlib
-    import re
+  import hashlib
+  import re
 
-    HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
+  HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 
-    def slug(text: str) -> str:
-        normalized = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
-        return normalized or "section"
 
-    def chunk_markdown_sections(
-        document_id: str,
-        version: int,
-        source_uri: str,
-        markdown: str,
-    ) -> list[Chunk]:
-        chunks: list[Chunk] = []
-        section_path: list[str] = []
-        body: list[str] = []document_id
-        ordinal = 0
+  def slug(text: str) -> str:
+      """
+      Convert a text string into a URI-safe string by first converting to lower case and then
+      replacing all non-alpha-numeric characters with a dash (-)
+      """
+      normalized = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+      return normalized or "section"
 
-        def flush() -> None:
-            nonlocal body, ordinal
-            text = "\n".join(body).strip()
-            body = []
-            if not text:
-                return
 
-            title = section_path[-1] if section_path else "preamble"
-            digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
-            chunks.append(
-                Chunk(
-                    chunk_id=f"{document_id}#{slug(title)}-{ordinal:03d}",
-                    document_id=document_id,
-                    document_version=version,
-                    source_uri=source_uri,
-                    source_type="markdown",
-                    section_path=section_path.copy(),
-                    ordinal=ordinal,
-                    text=text,
-                    content_hash=digest,
-                )
-            )
-            ordinal += 1
+  def chunk_markdown_sections(
+      document_id: str,
+      version: int,
+      source_uri: str,
+      markdown: str,
+  ) -> list[Chunk]:
+      """
+      Parse a markdown document into sections based on the headings.
+      """
+      chunks: list[Chunk] = []
+      section_path: list[str] = []
+      body: list[str] = []
+      ordinal = 0
 
-        for line in markdown.splitlines():
-            match = HEADING.match(line)
-            if match:
-                flush()
-                level = len(match.group(1))
-                title = match.group(2)
-                section_path = section_path[: level - 1] + [title]
-            else:
-                body.append(line)
+      def generate_chunk() -> None:
+          """
+          Private helper function that normalizes the body, computes the title and content hash, 
+          adds a Chunk record to the chunks list, and manages the ordinal counter 
+          """
+          nonlocal body, ordinal
+          text = "\n".join(body).strip()
+          body = []
+          if not text:
+              return
 
-        flush()
-        return chunks
+          title = section_path[-1] if section_path else "preamble"
+          digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
+          chunks.append(
+              Chunk(
+                  chunk_id=f"{document_id}#{slug(title)}-{ordinal:03d}",
+                  document_id=document_id,
+                  document_version=version,
+                  source_uri=source_uri,
+                  source_type="markdown",
+                  section_path=section_path.copy(),
+                  ordinal=ordinal,
+                  text=text,
+                  content_hash=digest,
+              )
+          )
+          ordinal += 1
 
-The ``HEADING`` regular expression is doing the work of identifying headers. Let's break it down:
+      for line in markdown.splitlines():
+          match = HEADING.match(line)
+          if match:             # the line contained a heading
+              generate_chunk()  # we found a new heading, so generate a chunk 
+              level = len(match.group(1))  # the level of the heading is the length of the firs group  
+              title = match.group(2)       # the titel is the second group
+              
+              # the level of the current heading could be above or below the previous heading
+              # set the section path to include the previous paths up to the current level, and then add the title 
+              section_path = section_path[: level - 1] + [title]  #
+          
+          else:  # the line did not contain a heading, so add it to the body
+              body.append(line)
+
+      flush()
+      return chunks
+
+
+The ``HEADING`` regular expression is doing the work of identifying headings, including heading levels as well 
+as heading titles. Let's break it down:
 
 * The initial ``^`` matches the start of a line/start of string
 * The ``(#{1,6})`` matches between 1 and 6 ``#`` characters in a row and captures them as a group (group 1).
@@ -183,6 +223,17 @@ The ``HEADING`` regular expression is doing the work of identifying headers. Let
 Note that the length of the group 1 string is the heading level (i.e., ``#`` is level 1, ``##`` is level 2, 
 ``###`` is level 3, etc.), while group 2 itself is the actual heading title. 
 
+Computing the ``section_path`` is a little tricky as well. The key point is that when we find a new 
+heading, there are a few cases:
+
+1) The new heading is at a higher level than the previous heading (including a new level 1 heading)
+2) The new heading is at a lower level that the previous heading 
+3) The new heading is at the same level as the previous heading. 
+
+If you think about it though, in all three cases, the computation for the ``section_path`` uses the 
+same calculation: we maintain the current ``section_path`` up to the *new level - 1*, then we append the 
+new title to the end of the list. (If this isn't clear, think about it at home until it becomes clear. It 
+might help to work out a few examples.)
 
 We can try it on an example document with two section headers: 
 
@@ -215,6 +266,8 @@ We can try it on an example document with two section headers:
   regular expression above does not identify various Markdown structures, such as code blocks, embedded HTML, 
   or even all edge cases associated with heading parsing.
 
+The main point of showing the code above is to give some indication that these parsers are subtle and non-trivial. 
+
 
 Ranking in Retrieval Algorithms 
 --------------------------------
@@ -224,10 +277,68 @@ the retriever return? Often times, the number of records to be used depends on t
 Therefore, a standard approach is to simply return a ranking of records, with the most relevant records 
 (according to the retriever) appearing first. 
 
+For the demonstrations below, we will reuse the small corpus from the polymers setting. 
+
+
+.. code-block:: python3 
+      
+    CHUNKS = [
+        {
+            "chunk_id": "POLY-17#conditioning",
+            "document_id": "POLY-17",
+            "text": (
+                "Before tensile testing, specimens were conditioned at "
+                "23 degrees Celsius and 50 percent relative humidity for "
+                "48 hours."
+            ),
+        },
+        {
+            "chunk_id": "POLY-17#materials",
+            "document_id": "POLY-17",
+            "text": (
+                "The study compared polymer grades P-A, P-B, and P-C "
+                "manufactured on the same extrusion line."
+            ),
+        },
+        {
+            "chunk_id": "POLY-17#strength",
+            "document_id": "POLY-17",
+            "text": (
+                "At baseline, grade P-B had a mean tensile strength "
+                "of 43.2 MPa."
+            ),
+        },
+        {
+            "chunk_id": "POLY-17#defect-rule",
+            "document_id": "POLY-17",
+            "text": (
+                "A specimen was labeled defective if its tensile strength "
+                "was below 35 MPa or if inspection found visible voids."
+            ),
+        },
+        {
+            "chunk_id": "POLY-17#conclusion",
+            "document_id": "POLY-17",
+            "text": (
+                "At baseline, grade P-B passed the tensile-strength component "
+                "of the defect rule because its mean strength exceeded the "
+                "specified threshold."
+            ),
+        },
+        {
+            "chunk_id": "POLY-17#limitations",
+            "document_id": "POLY-17",
+            "text": (
+                "The study did not perform ultraviolet-aging experiments, "
+                "so it reports no measurements after UV exposure."
+            ),
+        },
+    ]
+
 Lexical Retrieval 
 -----------------
 
-Lexical retrieval, also called sparse retrieval, is a search method that matches queries to documents 
+As we say last time, lexical retrieval, also called sparse retrieval, is a search method that matches queries to documents 
 based on the tokens or keywords they have in common. The term 
 *sparse* here refers to the vector representation used where each token in the vocabulary is mapped to a 
 unique dimension. Thus, a vector representing a chunk is very high dimensional, but must entries in the vector 
@@ -258,16 +369,16 @@ A common form is:
          {f(t,d) + k_1\left(1-b+b\frac{|d|}{\operatorname{avgdl}}\right)}
 
 Here, :math:`f(t,d)` is the frequency of term :math:`t` in document :math:`d`, :math:`|d|` is the
-document length, and :math:`k_1` and :math:`b` control saturation and length normalization. Students do
-not need to memorize the formula; the important point is that repeating a term ten times does not make
-a document ten times as relevant.
+document length, and :math:`k_1` and :math:`b` control saturation and length normalization. You do
+not need to memorize the formula. Rather, the important ideas to take away are we have normalized 
+by: 1) the term frequency, and 2) the document length.  
 
 To make lexical retrieval go fast, an *inverted index* is typically used. The idea is that since each document 
 or chunk contains a relatively small number of tokens, the system maintains a lookup table of keywords -> documents. 
 At query time, the engine can score likely candidates rather than scan every document.
 
 
-The following TF--IDF implementation is sufficient for our small corpus:
+We'll use the following TF--IDF implementation that we saw last time: 
 
 .. code-block:: python
 
@@ -354,6 +465,18 @@ Instead, a vector index uses exact or approximate nearest-neighbor search.
 But the underlying interface to the rest of the application would remain the same: a given input query 
 produces a ranked candidate list.
 
+Let's see how dense_search works on our previous failure example: 
+
+.. code-block:: python3
+
+    dense_search(
+        "Have researchers tested how outdoor sunlight changes "
+        "the material over time?",
+        k=3,
+    )    
+
+
+
 Dense retrieval has different tradeoffs from lexical retrieval:
 
 .. list-table::
@@ -431,67 +554,100 @@ a cosine-similarity score.
             for chunk_id in ordered_ids[:limit]
         ]
 
-    question = "Why can computation not continue forever?"
-    sparse_results = sparse_search(question, k=5)
-
-    # A saved dense ranking keeps the fusion exercise runnable even when the
-    # optional embedding model is not installed on a student's machine.
-    example_dense_results = [
-        {**CHUNKS[3], "score": 0.84},
-        {**CHUNKS[4], "score": 0.53},
-        {**CHUNKS[5], "score": 0.41},
-    ]
-
-    hybrid_results = reciprocal_rank_fusion(
-        [sparse_results, example_dense_results],
-        limit=3,
-    )
-
-    for result in hybrid_results:
-        print(f"{result['score']:.4f}  {result['chunk_id']}")
 
 The ``limit`` argument controls the number of fused candidates retained.
-If the optional embedding model is available, replace ``example_dense_results`` with
-``dense_search(question, k=5)`` and compare the fused ranking.
 
+Let's look at another example and compare the sparse, dense and hybrid retrieval methods. 
 
-.. .. figure:: ./images/Hybrid-search.png 
-..     :width: 800px
-..     :align: center
+.. code-block:: python3 
 
-..     An example hybrid-retrieval architecture
+  question = (
+      "At baseline, was grade P-B above the quality cutoff?"
+  )
 
-.. Test 
+  sparse_results = sparse_search(question, k=5)
+
+  # A saved dense ranking keeps the fusion exercise runnable without
+  # requiring the embedding model.
+  example_dense_results = [
+      {**CHUNKS[4], "score": 0.84},  # conclusion
+      {**CHUNKS[3], "score": 0.76},  # defect rule
+      {**CHUNKS[2], "score": 0.71},  # measured strength
+  ]
+
+  hybrid_results = reciprocal_rank_fusion(
+      [sparse_results, example_dense_results],
+      limit=4,
+  )
+
+  for result in hybrid_results:
+      print(f"{result['score']:.4f}  {result['chunk_id']}")
 
 Metadata Filters and Relation Expansion
 ---------------------------------------
 
 Similarity is not the only source of relevance. Application constraints may require filtering by
-document version, date, author, access permission, or source type. When possible, mandatory filters
-should be enforced as part of retrieval rather than merely described in a prompt.
+document version, date, author, access permission, source type or other metadata. For example, suppose a 
+knowledge base contains papers that are both peer-reviewed and not peer-reviewed. If a question 
+asks for information about *peer-reviewed* articles on a topic, then the system needs to filter on 
+that field, in addition to similarity. 
 
-Relations can add context that similarity search alone misses. Formal-Lit-QA might connect a theorem to
-its proof, a use of notation to its definition, or an erratum to the original result.
+Mandatory filters should be enforced as part of retrieval rather than described in a prompt. We do not 
+want to trust an LLM to use only part of the evidence supplied. 
+
+Similarly, relations can add additional evidence to the context that similarity search alone misses. 
+For example, in the Formal-Lit-QA setting, the system might connect a theorem to
+its proof or a use of notation to its definition. These related objects may have low similarity with 
+each other but high relevance to the task at hand. 
+
+For instance, continuing our example above, suppose we have a ``supported_by`` relation for 
+conclusion chunks:
 
 .. code-block:: python
 
-    RELATIONS = {
-        "TYP-101#type-safety": [
-            "TYP-101#progress",
-            "TYP-101#preservation",
-        ]
-    }
+    RELATIONS = [
+        {
+            "source_chunk_id": "POLY-17#conclusion",
+            "relation_type": "supported_by",
+            "target_chunk_id": "POLY-17#strength",
+        },
+        {
+            "source_chunk_id": "POLY-17#conclusion",
+            "relation_type": "applies_rule",
+            "target_chunk_id": "POLY-17#defect-rule",
+        },
+    ]
+
+
+Assuming we have already retrieved a set of ``results``, we can expand to include related chunks 
+in our retriever like so: 
+
+.. code-block:: python
 
     def expand_related(results: list[dict]) -> list[dict]:
-        by_id = {chunk["chunk_id"]: chunk for chunk in CHUNKS}
-        ordered_ids = [result["chunk_id"] for result in results]
+        by_id = {
+            chunk["chunk_id"]: chunk
+            for chunk in CHUNKS
+        }
 
-        for result in results:
-            for related_id in RELATIONS.get(result["chunk_id"], []):
-                if related_id not in ordered_ids:
-                    ordered_ids.append(related_id)
+        ordered_ids = [
+            result["chunk_id"]
+            for result in results
+        ]
+        selected_ids = set(ordered_ids)
 
-        return [by_id[chunk_id] for chunk_id in ordered_ids]
+        for relation in RELATIONS:
+            source_id = relation["source_chunk_id"]
+            target_id = relation["target_chunk_id"]
+
+            if source_id in selected_ids and target_id not in selected_ids:
+                ordered_ids.append(target_id)
+                selected_ids.add(target_id)
+
+        return [
+            by_id[chunk_id]
+            for chunk_id in ordered_ids
+        ]
 
 Relation expansion should be deliberate and bounded. Expanding every neighbor in a dense relation graph
 can overflow the prompt with redundant or irrelevant context.
