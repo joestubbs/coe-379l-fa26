@@ -368,7 +368,11 @@ A common form is:
     \frac{f(t,d)(k_1+1)}
          {f(t,d) + k_1\left(1-b+b\frac{|d|}{\operatorname{avgdl}}\right)}
 
-Here, :math:`f(t,d)` is the frequency of term :math:`t` in document :math:`d`, :math:`|d|` is the
+Here, :math:`f(t,d)` is the frequency of term :math:`t` in document :math:`d`, 
+:math:`\operatorname{IDF}(t)` is the inverse document frequency of term :math:`t` (i.e., the total 
+number of documents in the corpus divided by the number of documents in which :math:`t` appears, although 
+usually a :math:`log` of this ratio is taken and there could be some smoothing to prevent division by 0),
+:math:`|d|` is the
 document length, and :math:`k_1` and :math:`b` control saturation and length normalization. You do
 not need to memorize the formula. Rather, the important ideas to take away are we have normalized 
 by: 1) the term frequency, and 2) the document length.  
@@ -378,7 +382,7 @@ or chunk contains a relatively small number of tokens, the system maintains a lo
 At query time, the engine can score likely candidates rather than scan every document.
 
 
-We'll use the following TF--IDF implementation that we saw last time: 
+We'll use a small variation on the TF--IDF implementation that we saw last time: 
 
 .. code-block:: python
 
@@ -390,7 +394,8 @@ We'll use the following TF--IDF implementation that we saw last time:
         lowercase=True,
         stop_words="english",
         ngram_range=(1, 2),
-        token_pattern=r"(?u)\b[\w#.-]+\b",
+        token_pattern=r"(?u)\b[\w#.-]+\b",  # define what constitutes a token; allows # . and - inside tokens and allow
+                                            # allow one-character components. This supports our identifiers like P-B
     )
     sparse_matrix = sparse_vectorizer.fit_transform(
         chunk["text"] for chunk in CHUNKS
@@ -440,19 +445,19 @@ The code below uses ``sentence-transformers`` to provide a basic dense search im
     from sentence_transformers import SentenceTransformer
 
     embedding_model = SentenceTransformer(
-        "sentence-transformers/all-MiniLM-L6-v2"
+        "sentence-transformers/all-MiniLM-L6-v2"   # use a pre-trained embedding model 
     )
-    dense_matrix = embedding_model.encode(
+    dense_matrix = embedding_model.encode(         # encode all of the chunks 
         [chunk["text"] for chunk in CHUNKS],
-        normalize_embeddings=True,
+        normalize_embeddings=True,                 # return normal vectors
     )
 
     def dense_search(query: str, k: int = 3) -> list[dict]:
-        query_vector = embedding_model.encode(
+        query_vector = embedding_model.encode(  # encode the query using the embedding model
             [query],
-            normalize_embeddings=True,
+            normalize_embeddings=True,          # return normal vectors
         )[0]
-        scores = dense_matrix @ query_vector
+        scores = dense_matrix @ query_vector    # matrix-vector multiplication, i.e., cosine similarity (we normalized previously)
         order = np.argsort(scores)[::-1]
         return [
             {**CHUNKS[index], "score": float(scores[index])}
@@ -509,7 +514,7 @@ separately in parallel, each producing a ranking, and then combine the rankings 
 single ranking. 
 
 One robust method is called *reciprocal-rank fusion* (RRF). Suppose we have a set of :math:`R` lists 
-of rankings. Intuitively, in RRF we score a record :math:`d` by summing the reciprocals of its rankings 
+of rankings. Intuitively, in RRF we score a record (or chunk) :math:`d` by summing the reciprocals of its rankings 
 in each of the :math:`R` lists: 
 
 .. math::
@@ -531,20 +536,20 @@ a cosine-similarity score.
     from collections import defaultdict
 
     def reciprocal_rank_fusion(
-        rankings: list[list[dict]],
-        rrf_k: int = 60,
-        limit: int = 5,
+        rankings: list[list[dict]],    # each ranking is a list[dict] with each dict having a `chunk_id` and the order is given by the index in the list
+        rrf_k: int = 60,               # the RRF constant 
+        limit: int = 5,                # max number results to return 
     ) -> list[dict]:
-        fused_scores: dict[str, float] = defaultdict(float)
-        records: dict[str, dict] = {}
+        fused_scores: dict[str, float] = defaultdict(float)    # mapping of chunk_id -> fused score 
+        records: dict[str, dict] = {}                          # mapping of chunk_id -> 
 
-        for ranking in rankings:
-            for rank, result in enumerate(ranking, start=1):
+        for ranking in rankings:      # iterate through the list of rankings 
+            for rank, result in enumerate(ranking, start=1):   # the rank is the index in the list, starting at 1 
                 chunk_id = result["chunk_id"]
-                records[chunk_id] = result
-                fused_scores[chunk_id] += 1.0 / (rrf_k + rank)
+                records[chunk_id] = result                     # save the result 
+                fused_scores[chunk_id] += 1.0 / (rrf_k + rank) # compute the actual fused score -- just uses rank! not orig score
 
-        ordered_ids = sorted(
+        ordered_ids = sorted(         # sort by the fused scores 
             fused_scores,
             key=fused_scores.get,
             reverse=True,
@@ -636,12 +641,12 @@ in our retriever like so:
         ]
         selected_ids = set(ordered_ids)
 
-        for relation in RELATIONS:
+        for relation in RELATIONS:    # iterate through the relation records 
             source_id = relation["source_chunk_id"]
             target_id = relation["target_chunk_id"]
 
-            if source_id in selected_ids and target_id not in selected_ids:
-                ordered_ids.append(target_id)
+            if source_id in selected_ids and target_id not in selected_ids:  # check if the source was selected AND 
+                ordered_ids.append(target_id)                                # target was not (only need to append if not already selected)
                 selected_ids.add(target_id)
 
         return [
