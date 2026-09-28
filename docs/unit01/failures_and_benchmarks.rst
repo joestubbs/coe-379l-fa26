@@ -780,9 +780,26 @@ unsupported threshold claim and the two unnecessary abstentions.
 Formal-Lit-QA Public Cases and Initial Results
 ----------------------------------------------
 
-Formal-Lit-QA asks a system to answer questions from a specified theoretical research-literature corpus, 
-report the supporting passages, and abstain when that corpus does not provide sufficient evidence. Any
-benchmark to evaluate system performance on this task should include several qualitatively different obligations.
+Formal-Lit-QA is a system whose goal is to answer questions from a specified theoretical research-literature corpus, 
+report the supporting passages, and abstain when that corpus does not provide sufficient evidence. The system leverages 
+RAG over a corpus of articles from the arXiv whose package includes a LaTeX project. Because LaTeX is structured, 
+the RAG ingestion system is capable of parsing chunks of different types and identifying relationships between 
+chunks. For example, we saw an example of a ``result_statement`` chunk in the Intro to RAG module:
+
+.. code-block:: json
+
+    {
+      "chunk_id": "arxiv_2512_09280/result_statement_0001",
+      "paper_id": "arxiv_2512_09280",
+      "chunk_type": "result_statement",
+      "raw_content": "\\begin{theorem}[Newman's Lemma]\nTermination and local confluence imply confluence.\n\\end{theorem}",
+      "normalized_text": "Termination and local confluence imply confluence.",
+      "start_offset": 8677,
+      "end_offset": 8773
+    }
+
+
+Any benchmark to evaluate Formal-Lit-QA's performance should include several qualitatively different goals.
 
 .. list-table::
    :header-rows: 1
@@ -813,7 +830,7 @@ benchmark to evaluate system performance on this task should include several qua
      - No adequate supporting result
      - Failure to abstain
 
-For example, a concrete result-statement case can refer to the corpus record introduced in the RAG lecture:
+For example, a concrete result-statement case can refer to the previous chunk record:
 
 .. code-block:: python
 
