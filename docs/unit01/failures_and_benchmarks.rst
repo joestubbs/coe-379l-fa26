@@ -26,8 +26,8 @@ By the end of this module, students should be able to:
 * explain why requests involving live state or side effects require tools rather than retrieval alone
 
 
-One End-to-End RAG Failure
---------------------------
+A RAG Failure at Multiple Levels 
+--------------------------------
 
 Consider the following question about the fictional polymer report used in the previous modules:
 
@@ -91,8 +91,8 @@ The final yes/no conclusion happens to agree with the complete corpus: 43.2 MPa 
 
 This distinction is central to responsible evaluation:
 
-    *A correct answer is not necessarily properly supported by the cited evidence, and a valid-looking citation does not
-    necessarily provide supporting evidence for an answer.*
+    *A factually correct answer is not necessarily properly supported by the cited evidence, and 
+    a valid-looking citation does not necessarily provide supporting evidence for an answer.*
 
 Failure Is Stage-Specific
 -------------------------
@@ -212,7 +212,7 @@ Citation Failures
 ^^^^^^^^^^^^^^^^^
 
 There are several requirements involving citations to be used in a final answer. 
-The list below provides these requirements in increasing order of 
+The list below provides these requirements in order of increasing strength:
 
 1. The cited identifier has the correct syntax.
 2. The identifier exists in the corpus.
@@ -220,8 +220,9 @@ The list below provides these requirements in increasing order of
 4. The cited record is attached to the correct claim.
 5. The record actually supports that claim.
 
-The first three properties can usually be checked deterministically, while the fifth requires parsing 
-the semantic meaning associated with a claim and a record. This usually not decidable in general. 
+The first three properties can usually be checked deterministically, while the fourth and fifth 
+usually require parsing the semantic meaning associated with a claim and a record. 
+This usually not decidable in general. 
 
 Abstention Failures
 ^^^^^^^^^^^^^^^^^^^
