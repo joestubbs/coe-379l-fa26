@@ -863,19 +863,19 @@ examples:
 
    * - Request
      - Needed capability
-     - Why retrieval alone is insufficient
+     - Is document retrieval alone is sufficient?
    * - What qualification is required to use the tensile tester?
      - Policy retrieval
-     - The answer is contained in a relatively static policy corpus.
+     - Yes: the answer is contained in a relatively static policy corpus.
    * - Am I currently authorized to use the tensile tester?
      - Authorization lookup tool
-     - The answer depends on private, changing user state.
+     - No: the answer depends on private, changing user state and an authorization policy service
    * - Is the tensile tester available Friday afternoon?
      - Resource-status or scheduling tool
-     - Availability changes over time and must be queried live.
+     - No: availability changes over time and must be queried from a scheduling service 
    * - Reserve the tensile tester for Friday afternoon.
      - Mutating reservation tool
-     - The request requires a side effect, not merely an answer.
+     - No: the request requires modifying state, not merely an answer.
 
 A language model can generate text claiming that a reservation was created, but it is not able to 
 actually reserve the tool in the reservation system. Thus, our application will need to be able to 
