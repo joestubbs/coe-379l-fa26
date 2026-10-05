@@ -951,8 +951,8 @@ Finally, read ``ARCHITECTURE.md`` and inspect the supplied modules in this order
 
 Do not begin Milestone 1 until Milestone 0 passes.
 
-Milestone 0 Checkpoint
-^^^^^^^^^^^^^^^^^^^^^^
+Milestone 0: Check Your Understading 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You should be able to answer the following questions: 
 
