@@ -795,3 +795,169 @@ A denied proposal becomes an observation such as:
 
 This observation is recorded and returned to the model. The model may then propose a corrected action or
 produce a truthful blocked response. It may not report that the reservation succeeded.
+
+
+Midterm Project Repository Overview 
+------------------------------------
+
+Here is an overview of the code repository for the midterm: 
+
+.. code-block:: text
+
+    coe379lfa26-midterm/
+    ├── ASSIGNMENT.md
+    ├── IMPLEMENTATON_STEPS.md
+    ├── ARCHITECTURE.md
+    ├── corpus/
+    │   └── policies.json
+    ├── data/
+    │   ├── initial_state.json
+    │   ├── public_scenarios.json
+    │   └── public_scripts.json
+    ├── src/atlas_agent/
+    │   ├── models.py
+    │   ├── retrieval.py
+    │   ├── simulator.py
+    │   ├── tools.py
+    │   ├── llm.py
+    │   ├── policy_context.py
+    │   ├── evaluation.py
+    │   ├── public_benchmark.py
+    │   ├── agent_models.py          # student edits
+    │   ├── prompts.py               # student edits
+    │   ├── agent.py                 # student edits
+    │   └── validation.py            # student edits
+    └── tests/
+  │   └── test_student_cases.py.py   # student adds
+
+
+Module Responsibilities
+^^^^^^^^^^^^^^^^^^^^^^^
+
+.. list-table::
+   :header-rows: 1
+   :widths: 28 52 20
+
+   * - Module
+     - Responsibility
+     - Student edits?
+   * - ``models.py``
+     - Trusted requests, observations, traces, and final responses
+     - No
+   * - ``tools.py``
+     - Tool argument models and deterministic dispatch
+     - No
+   * - ``llm.py``
+     - Structured LLM interface, deterministic test double, and optional live adapter
+     - No
+   * - ``policy_context.py``
+     - Converts trace events into reservation-policy facts
+     - No
+   * - ``agent_models.py``
+     - Model decision variants and discriminated union
+     - Yes
+   * - ``prompts.py``
+     - System instructions and initial message construction
+     - Yes
+   * - ``agent.py``
+     - Bounded decision--action--observation loop
+     - Yes
+   * - ``validation.py``
+     - Request binding, reservation preconditions, and final consistency
+     - Yes
+
+You should read all of the code, but you should only modify the modules marked ``Yes``.
+
+
+``ScriptedLLM`` and Deterministic Development
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As previously mentioned, the midterm code repo provides two implementations 
+of the LLM backend. 
+Both model backends implement the same interface:
+
+.. code-block:: python
+
+    from typing import Protocol
+
+    class StructuredLLM(Protocol):
+        def generate(
+            self,
+            *,
+            messages: list[dict[str, str]],
+            response_model: TypeAdapter[Any],
+        ) -> Any:
+            """Return one object validated against response_model."""
+
+``ScriptedLLM`` returns a predefined sequence of decisions. It makes no network call, so tests remain
+deterministic and do not depend on live-model availability. ``OpenAICompatibleLLM`` provides the 
+same interface for working with a "live" HTTP inference service, like the one hosted at TACC. 
+
+For the midterm, we do not require you to make use of the ``OpenAICompatibleLLM`` interface, 
+but it is there if you would like to experiment with it. 
+
+
+Step 0: Validating Your Checkout
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In Step 0 we make sure you are able to set up the environment and run the tests 
+before you edit any source files.
+
+First, install the development environment from the repository root:
+
+.. code-block:: bash
+
+  uv sync --extra dev
+
+Run the supplied tests:
+
+.. code-block:: bash
+
+    uv run pytest \
+      tests/test_retrieval.py \
+      tests/test_tools.py \
+      tests/test_llm.py \
+      tests/test_policy_context.py
+
+These tests should pass before any TODO is changed. A failure at this stage is an environment or
+supplied-infrastructure problem, not a student agent implementation failure.
+
+Invoke the tools without an LLM:
+
+.. code-block:: bash
+
+  uv run atlas-demo-tools
+
+The command invokes three tools:
+
+1. ``get_user_authorizations``;
+2. ``get_resource_status``; and
+3. ``search_lab_documents``.
+
+Each invocation returns one ``ToolObservation``. For every observation, locate:
+
+* ``ok``;
+* ``tool``;
+* ``data``;
+* ``error_code``; and
+* ``message``.
+
+Finally, read ``ARCHITECTURE.md`` and inspect the supplied modules in this order:
+
+1. ``models.py``;
+2. ``tools.py``;
+3. ``llm.py``; and
+4. ``policy_context.py``.
+
+Do not begin Milestone 1 until Milestone 0 passes.
+
+Milestone 0 Checkpoint
+^^^^^^^^^^^^^^^^^^^^^^
+
+You should be able to answer the following questions: 
+
+* Which object contains the authenticated user ID?
+* Which module validates tool-specific arguments?
+* Which object distinguishes success from a tool error?
+* Which model backend performs no network calls?
+* Which four modules are normally edited by students?
