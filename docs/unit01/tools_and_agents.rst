@@ -306,7 +306,7 @@ In Python, we can implement this using a Pydantic data model for each option, wh
 
     class FinalDecision(DecisionModel):
         kind: Literal["final"]
-        response: AgentResponse
+        response: TerminalResponse
 
 All three define the ``kind`` field as a Literal with exactly one value. Moreover, the first two models define 
 their other fields in-line, while the ``FinalDecision`` includes a ``response`` field which is its own model. 
@@ -324,6 +324,13 @@ It is defined like this:
         message: str
         citations: list[str] = Field(default_factory=list)
         completed_actions: list[str] = Field(default_factory=list)
+
+    class TerminalResponse(AgentResponse):
+        status: Literal[
+            "completed",
+            "blocked",
+            "failed",
+        ]
 
 In any case, we can now define an ``AgentDecision`` as a discriminated union as follows: 
 
@@ -724,14 +731,67 @@ For the ``reserve_resource`` tool call, it also checks facts derived from the pr
 including: 
 
 * at least one policy search was successfully completed
-* user authorizations were checked
+* at least one authorization call for the proposed ``user_id`` was checked
 * resource status was checked for the requested interval
-* the project is authorized
-* the required qualification is current
-* the resource is available
-* calibration is current
-* maintenance is clear
-* after-hours approval is satisfied when required
+* whether the proposed project appears in the authorization data, as a proxy for checking if it is authorized
+* the required qualification is current, based on mapping the resource kind to its required qualification check 
+* the resource is available, based on the ``available`` field from a matching resource-status trace
+* calibration is current, based on the ``calibration_current`` field from that observation
+* maintenance is clear, i.e., that ``matinenance`` is ``False`` 
+* after-hours approval is satisfied when required. This is based on the interval and whether it is after hours. 
 
+As you can see, the observation traces are key to being able to implement these action gate checks. 
 
+Note also that some of these checks are more shallow then would be ideal. For example, the policy search 
+check simply verifies that at least one successful call to ``search_lab_documents`` was made. The implementation 
+is: 
 
+.. code-block:: python 
+
+    policy_retrieved = any(
+        event.observation.tool == "search_lab_documents"
+        and event.observation.ok
+        for event in trace
+    )    
+
+In particular, that is not checking that the search even returned any chunks or that the retrieved chunks were 
+relevant to the query, etc. Implementing complete policy checking is a significant engineering challenge, but it 
+does not alter the overall design. 
+
+Permission and Denial for Tool Call Proposals
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Recall that once the AI model proposes a typed tool call decision, there are two possible outcomes from our 
+applicant's validation --- either the tool call is permitted and we execute the call or the tool call is denied: 
+
+.. math::
+
+    \text{typed proposal from AI model}
+    \rightarrow
+    \text{request and policy validation}
+    \rightarrow
+
+.. math:: 
+
+    \begin{cases}
+      \text{tool execution} & \text{if permitted} \\
+      \text{denial observation} & \text{if denied}
+    \end{cases}
+    \rightarrow
+    \text{trace event}
+
+Both cases are represented by a ``ToolObservation`` object. 
+
+A denied proposal becomes an observation such as:
+
+.. code-block:: python
+
+    denied = ToolObservation(
+        ok=False,
+        tool="reserve_resource",
+        error_code="action_gate_denied",
+        message="user_id does not match the authenticated user",
+    )
+
+This observation is recorded and returned to the model. The model may then propose a corrected action or
+produce a truthful blocked response. It may not report that the reservation succeeded.
