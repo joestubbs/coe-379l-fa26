@@ -21,3 +21,4 @@ with the computing environment at TACC that they will use for completing class w
    rag_engineering
    failures_and_benchmarks
    tools_and_agents
+   agents_test_limits
