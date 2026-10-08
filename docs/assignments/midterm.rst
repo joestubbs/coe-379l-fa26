@@ -65,3 +65,8 @@ able to pull your git repository for any reason.
 We will reply with an acknowledgement that we received and were able to pull the GitHub repo.
 I recommend that everyone create the git repository, either share it with us more make it public, 
 and then send us the email above ASAP. 
+
+**Evaluation:**
+We will git pull all repos on the due date at or after 5 pm. This is the version of your submission 
+that we will evaluate unless we receive a message that you would like an extension (with a 1 point 
+per day penalty). 
