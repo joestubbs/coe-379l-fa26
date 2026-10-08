@@ -958,6 +958,5 @@ You should be able to answer the following questions:
 
 * Which object contains the authenticated user ID?
 * Which module validates tool-specific arguments?
-* Which object distinguishes success from a tool error?
 * Which model backend performs no network calls?
 * Which four modules are normally edited by students?
