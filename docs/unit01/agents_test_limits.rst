@@ -152,8 +152,8 @@ A runtime validator checks a predicate when the program executes. Consider the f
         errors.append("user_id_must_match_authenticated_user")
 
 
-For the inputs of the current run, this code deterministically checks whether there is a mismatch between the `
-`user_id`` used in the decision arguments and the one provided in the authenticated request. If in subsequent code, 
+For the inputs of the current run, this code deterministically checks whether there is a mismatch between the ``user_id`` 
+used in the decision arguments and the one provided in the authenticated request. If in subsequent code, 
 the action validation refuses to execute the scheduler tool whenever ``errors`` is nonempty, the current unsafe 
 proposal will not reach the tool through that path.
 
@@ -188,7 +188,7 @@ tested. It does not establish a universal claim about *all* inputs.
 Universal Claims
 ^^^^^^^^^^^^^^^^
 
-A universal claim (or sometimes, a universal property)) is a statement that is true for all inputs or executions:
+A *universal claim* (or sometimes, a *universal property*) is a statement that is true for all inputs or executions:
 
 .. code-block:: text
 
@@ -197,8 +197,8 @@ A universal claim (or sometimes, a universal property)) is a statement that is t
         if d.user_id != r.authenticated_user_id,
         then d is not dispatched to reserve_resource.
 
-The words “for every” are doing a substantial amount of work. We cannot evaluate this claim by selecting one value
-of ``r`` and one value of ``d``. We need to establish that the statement is true foe all possible vsalues of ``r`` and 
+The words “for every” are doing a substantial amount of work here. We cannot evaluate this claim by selecting one value
+of ``r`` and one value of ``d``. We need to establish that the statement is true foe all possible values of ``r`` and 
 ``d``.
 
 Counterexamples and Proof Obligations
@@ -215,8 +215,9 @@ we had the following pseudo trace:
 
 This one example is enough to establish that the universal claim above is *false*. 
 
-But, collecting individual examples cannot establish the universal claim in the same way. This asymmetry explains why
-testing is often highly effective at finding bugs while remaining incomplete as a proof technique.
+But, collecting individual examples cannot establish the universal claim above is *true* in the same way. 
+This asymmetry explains why testing is often highly effective at finding bugs while remaining 
+incomplete as a proof technique.
 
 Safety, Liveness, Termination, and Invariants
 ---------------------------------------------
@@ -236,8 +237,8 @@ In the context of the software systems we have been looking at, examples of safe
 * a tool call that fails is never recorded as successful in the trace
 * a reservation is never made with a substituted user identity
 
-A safety violation generally has what is referred to as a *finite witness* , that is, a finite execution trace of the 
-entire program or system that generates or exhibits a violation. In the last example above, if we can find even a single input 
+A safety violation generally has what is referred to as a *finite witness*, that is, a finite execution trace of the 
+entire program or system that generates or exhibits the violation. In the last example above, if we can find even a single input 
 where the system substitutes the authenticated identity for another user's identity in a reservation, the system trace of 
 the execution up to that event is enough to demonstrate the failure in the safety property.
 
@@ -270,7 +271,8 @@ Termination, either of a specific function, a program loop, or an entire program
 property. It is sometimes (though not always) the case that we want to know that a particular piece of software 
 eventually terminates. However, in many cases proving termination can be difficult. 
 
-Recall that the agent lab software we discussed used a bounded loop:
+Recall that the agent lab software we discussed used a bounded loop. The following is a slightly simplified 
+version of the real agent loop in the code: 
 
 .. code-block:: python
 
@@ -289,10 +291,10 @@ Recall that the agent lab software we discussed used a bounded loop:
         )
 
 
-This supports the conditional property:
+This supports the following conditional termination property:
 
-    If each call to the model and each tool invocation returns, ``run_agent`` requests at most
-    ``max_steps`` model decisions before returning.
+    *If each call to the model and each tool invocation returns, run_with_step_budget requests at most
+    max_steps model decisions before returning.*
 
 The *condition* specified with the *if* is essential to the correctness of the statement. A loop with ten iterations 
 can still wait forever during its first HTTP request. A step budget limits the number of iterations while a timeout limits 
@@ -302,15 +304,17 @@ the duration of an individual operation.
 Program States and Invariants
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-One way to model a program is as a set of states. We begin with the execution of the program at time :math:`t = 0`, 
-and the program has some initial state corresponding to the initial values of its variables. Then, the program executes 
+One way to model a program is as a sequence of *states*, where the values of each state are the variables and their values 
+at a given execution step. We begin with the initial execution of the program at time :math:`t = 0`.
+The program has some initial state corresponding to the initial values of its variables. Then, the program executes 
 its first instruction, and the values of the variables are updated. Moreover, new variables could be created, and some 
 existing variables could be destroyed. The set of all variables and their values after the first instruction is executed 
 is the program's state at :math:`t=1`. Proceeding in this way, we get a set of states for each value of :math:`t = 0, 1, 2, 3, ...`
 for forever or until the program terminates. (Turing-complete languages have the ability to create programs that never 
 terminate, so, in such languages, it is possible for the program's states to continue forever.)
 
-Note that the program's behavior can (and usually will) depend on some input. For example, the input, ``t``, determines 
+Note that the program's behavior can (and usually will) depend on some external input. 
+For instance, in the example below, the input, ``t``, determines 
 how many iterations of the loop are executed, and thus, how many states the program moves through. 
 
 .. code-block:: python3 
@@ -322,24 +326,24 @@ how many iterations of the loop are executed, and thus, how many states the prog
     print(x)
 
 Thus, we can define a *state* (or sometimes called an *abstract state* for emphasis) to be *any* assignment of values 
-to the variables of the program and then we define the *total state space* of the program to be the set of all such 
+to the variables of the program.  We then we define the *total state space* of the program to be the set of all such 
 states. It is important to note that a state may not ever be realized by the program for 
 any specific input. We say that a state is *reachable* if, after some finite number of steps, the program reaches the 
 state for some input. 
 
-An **invariant**, then, is a property of a program that holds in every reachable state. For example, in our la 
+An **invariant**, then, is a property of a program that holds in every reachable state. For example, in our lab 
 agent software setting, the following would be a desirable invariant: 
 
     Every successful ``reserve_resource`` event in the trace uses the authenticated user and the
     resolved project, resource, and interval from the trusted request.
 
 An invariant is not a predicate that is just checked at a single point in time, like once at the beginning. 
-In invariant must remain true after every allowed state transition.
+An invariant must remain true after every allowed state transition.
 
 Preconditions and Postconditions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A **precondition** states what must hold before an operation. A **postcondition** states what must hold
+A **precondition** states what must be true before an operation is executed. A **postcondition** states what must hold
 after it completes.
 
 For a reservation operation, we have the following pre and postconditions:
@@ -356,15 +360,17 @@ For a reservation operation, we have the following pre and postconditions:
       - the simulator contains a confirmed reservation
       - the successful observation identifies that reservation
 
-There is a natural interaction between preconditions, postconditions, and invariants. For instance, the action validator 
-checks selected preconditions, the tool and simulator determine whether the postcondition is produced and an invariant relates these
-operations across the entire execution.
+There is a natural interaction between preconditions, postconditions, and invariants. For instance: 
+
+* the action validator checks selected preconditions
+* the tool and simulator determine whether the postcondition is produced 
+* an invariant relates these operations across the entire execution.
 
 
 In-Class Exercise
 ^^^^^^^^^^^^^^^^^
 
-Classify each statement as either a: safety property, liveness or termination property, 
+Classify each statement as either a: safety property or a liveness/termination property:
 
 1. A denied reservation proposal never modifies simulator state.
 2. Every run eventually returns.
@@ -372,7 +378,7 @@ Classify each statement as either a: safety property, liveness or termination pr
 4. A live-model call completes within 60 seconds.
 
 Statements 1 and 3 are safety properties. Statements 2 and 4 concern liveness or termination. The
-fourth requires an implemented timeout and assumptions about what cancellation means for the remote
+fourth requires an implemented timeout and assumptions about the behavior of the remote
 operation.
 
 What Ordinary Python Enforcement Establishes
@@ -393,41 +399,148 @@ Pydantic can establish that a received decision satisfies the declared runtime s
 After successful validation, the application knows that ``decision`` matches one permitted decision
 variant and satisfies its field constraints.
 
-It does not know that:
+But there are still many other properties that it does not establish, such as: 
 
-* the selected tool is appropriate for the user's goal
-* the argument values are authorized
-* the cited facts are true
+* the selected tool is the optimal next step or even appropriate at all for the user's ultimate goal
+* the argument values for a tool call represent an authorized call 
+* the cited facts are actually true
 * executing the proposed action is safe
 
-Structure is a real property, but it is only one of a number of properties we would like to establish. 
+Establishing that a decision object has the correct structure is a useful property, but it is only one of a number of 
+properties we would like to establish. 
 
 
-Request Binding
-^^^^^^^^^^^^^^^
+Runtime Validators such as Request Binding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The request-binding validator compares a proposed action with the current task state:
+Runtime validators can enforce application rules. 
+
+For example, recall that the request-binding validator compares a proposed action with the current task state:
 
 .. code-block:: python
 
     def validate_request_binding(decision, *, request):
         args = decision.arguments
-        errors = []
+        # ... 
 
-        if (
-            "user_id" in args
-            and args["user_id"] != request.authenticated_user_id
-        ):
-            errors.append("user_id_must_match_authenticated_user")
+You will implement this function as part of your midterm. The basic contract is: 
 
-        return errors
+.. code-block:: text 
+
+    Input:
+        authenticated user = alice
+        proposed reservation user = bob
+
+    Required validation result:
+        DENY: proposed user does not match the authenticated user
 
 For a given ``decision`` and ``request`` object, the code deterministically checks whether the ``user_id`` 
 in the decision's arguments is the same as the authenticated user. 
 
+While useful, that still leaves several additional system-level properties to be verified, such as: 
+
+1. **Predicate correctness:** Does the comparison in the code actually express and implement the intended policy?
+2. **Coverage:** Is the validator always invoked before the protected action is taken or is there some code path that allows 
+   for executing the protected action without invoking the validator?
 
 
+**Validation Placement.** Note that the placement of the validator is an important part of establishing 
+correctness properties of the system. 
+
+The placement of the validation code relative to the tool call in the agentic loop speaks directly to the 
+coverage question above. If the placement were reversed and the validation appeared just after the tool call, 
+it would be completely useless. 
 
 
+A Last Example: Trace Consistency Check
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The final-response validator compares claims with evidence pulled from the collected traces.
+
+For a given response and trace, the check determines whether every claimed action name appears among the
+successful mutations.
+
+It does not establish various properties, such as: 
+
+* the tool truthfully reported the external system's outcome
+* two calls with the same tool name represent the same action
+* the final prose accurately describes the details represented in the completed actions object 
+
+What Testing Establishes
+------------------------
+
+Tests are indispensable. They reveal defects, prevent regressions, document expectations, and connect
+specifications to executable code. Their value depends on both the quality of the selected inputs and the 
+ability of the test code to evaluate the outcomes the most important outcomes. 
+
+Deterministic Scenario Testing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``ScriptedLLM`` removes live-model variability by supplying predefined decisions. A test can therefore
+exercise the real control loop while fixing the model-produced sequence:
+
+.. code-block:: python
+
+    decisions = [
+        {
+            "kind": "tool_call",
+            "tool": "get_user_authorizations",
+            "arguments": {"user_id": "alice"},
+            "reasoning_summary": "Inspect authorization state.",
+        },
+        {
+            "kind": "final",
+            "response": {
+                "status": "blocked",
+                "message": "No action was requested.",
+            },
+        },
+    ]
+
+    llm = ScriptedLLM(decisions)
+    run = run_agent(
+        request,
+        llm=llm,
+        environment=environment,
+    )
+
+Tests that exercise ``ScriptedLLM`` allow us to answer a specific question:
+
+    If the model were to make these proposals, would the application handle them correctly?
+
+But crucially, this does not provide guarantees about how the application will behave with a live model. 
 
 
+Types of Testing 
+^^^^^^^^^^^^^^^^^
+
+Various types of testing techniques are used for different purposes. Major types include: 
+
+* Unit tests -- Checks one function on selected inputs
+* Integration tests -- Checks interacting components on selected inputs  
+* Property-based tests -- uses a rule (or property) that must hold true of a function or other piece of code for any input, 
+  allowing a PBT framework to generate large volumes of random inputs and check that the property.
+* Fuzzing -- Searches for crashes and unexpected behavior using semi-randomly generated inputs 
+* Exhaustive finite testing -- cover every possible input case in a finite enumerated domain
+
+The strength of a test comes from both its input and its assertions. Consider the following code: 
+
+.. code-block:: python 
+
+    class MyModel(BaseModel):
+        # fields for MyModel... 
+
+    def test_1:
+        obj = MyModel(**inp_dict_1)    
+        assert obj is not None 
+
+    def test_2:
+        with pytest.raises(ValidationError): 
+            MyModel.model_validate(**inp_dict_2)
+
+The assertion in the first test is almost meaningless; if ``obj`` is created successfully then it will 
+never be ``None``, and it the input dictionary is not valid, the entire test will fail. 
+
+In the second test, we check specifically for a ``ValidationError``, which is more meaningful, but in 
+both cases, the value of the test is limited to the specific input. These tests only establish what 
+happens for the specific ``inp_dict`` objects. 
