@@ -544,3 +544,56 @@ never be ``None``, and it the input dictionary is not valid, the entire test wil
 In the second test, we check specifically for a ``ValidationError``, which is more meaningful, but in 
 both cases, the value of the test is limited to the specific input. These tests only establish what 
 happens for the specific ``inp_dict`` objects. 
+
+
+Formal Methods: Model, Specification, and Proof
+-----------------------------------------------
+
+Formal Methods provides a different approach to ensuring the correctness and robustness of a software 
+system and an approach that can lead to establishing properties of system *for all inputs* or *all reachable 
+states*. At a fundamental level, there are three components to formal methods: the model, the specification, 
+and the proof of some property or invariant. 
+
+Formal Model 
+^^^^^^^^^^^^
+
+A *formal system model* describes the states and transitions of the system that we have chosen to analyze.
+Here, the word *model* refers to an abstract mathematical representation of the software, not to the
+AI model used by the agent.
+
+ystem state might contain:
+
+.. code-block:: text
+
+    AtlasState =
+      agent state
+      + simulator state
+
+    AgentState =
+      trusted request
+      + message history
+      + execution trace
+      + remaining step budget
+
+The transition relation describes which next states may follow from a current state:
+
+.. code-block:: text
+
+    Next(current_state, event, next_state)
+
+The ``event`` might represent receiving a proposed decision, denying an unsafe action, dispatching
+a tool call, recording a tool observation, or producing a final response.
+
+For example, we may use a higher-level transition that represents processing one complete proposed
+decision:
+
+.. code-block:: text
+
+    ProcessDecision(current_state, proposed_decision, next_state)
+
+Here, ``proposed_decision`` is a typed value produced by the language model (or by ``ScriptedLLM``
+during deterministic testing). It is an input to the transition, not the formal system model itself.
+
+The formal system model may intentionally abstract away details such as HTTP packet delivery,
+filesystem behavior, or the internal computation of the language model. Those omissions become
+explicit assumptions or limitations of the analysis.
