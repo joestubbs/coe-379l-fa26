@@ -561,11 +561,11 @@ A *formal system model* describes the states and transitions of the system that 
 Here, the word *model* refers to an abstract mathematical representation of the software, not to the
 AI model used by the agent.
 
-ystem state might contain:
+The system state might contain:
 
 .. code-block:: text
 
-    AtlasState =
+    LabManagerState =
       agent state
       + simulator state
 
@@ -597,3 +597,57 @@ during deterministic testing). It is an input to the transition, not the formal 
 The formal system model may intentionally abstract away details such as HTTP packet delivery,
 filesystem behavior, or the internal computation of the language model. Those omissions become
 explicit assumptions or limitations of the analysis.
+
+
+Specification
+^^^^^^^^^^^^^
+
+A specification states the desired property of the system precisely in terms of the formal system model. 
+A request-binding safety property might be:
+
+.. code-block:: text
+
+    For every reachable state s and successor state s':
+
+      if Step(s, decision, s')
+      and the transition successfully executes reserve_resource,
+
+      then decision.arguments.user_id
+           equals s.request.authenticated_user_id.
+
+This is more precise than “the agent should use the right user.” It identifies:
+
+* the relevant states
+* the transition being constrained
+* the event that activates the requirement
+* the exact values that must agree
+
+
+Proof
+^^^^^
+
+For an invariant, a common proof structure is:
+
+1. **Initialization:** show that the invariant holds in the initial state.
+2. **Preservation:** show that every allowed transition preserves the invariant.
+3. **Reachability conclusion:** infer that the invariant holds in every reachable state.
+
+In compact form:
+
+.. code-block:: text
+
+    invariant(initial_state)
+
+    and
+
+    for every s, d, and s':
+      invariant(s) and Step(s, d, s')
+      imply invariant(s')
+
+    therefore
+
+    invariant(s) for every reachable state s
+
+Machine checking verifies that the proof follows from the supplied definitions and assumptions. 
+Note that these proofs establish facts about the formal model. That does not directly establish that the 
+formal system model perfectly represents the deployed system.
