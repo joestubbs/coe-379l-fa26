@@ -560,7 +560,10 @@ And we have the following examples:
 
 Let's make these mathematically precise. 
 
-Suppose:
+Safety
+~~~~~~
+
+We'll begin with a safety property. Suppose:
 
 * :math:`S` is the state space
 * :math:`A` is the set of modeled events or actions
@@ -596,12 +599,64 @@ The safety property can then be defined as follows:
 We are using one symbol we haven't introduces -- the "not" symbol (:math:`\neg`). This simply means that the 
 proposition is *not* true. 
 
+Equivalently, we could state it as follows: there does not exist a valid execution containing such a substitution event:
 
-Exercises
-^^^^^^^^^
+.. math::
+
+   \neg\exists \pi,\alpha,k,\quad
+   \operatorname{ValidExecution}(\pi,\alpha)
+   \land
+   \operatorname{IdentitySubstitution}(\pi(k),\alpha(k)).
+
+The first form says that every step of every valid execution is safe, while the second says that no
+counterexample execution and step exist.
+
+Liveness 
+~~~~~~~~
+
+We can use :math:`\operatorname{ValidExecution}` to define a liveness property corresponding to the conditional property that every request 
+results in a final outcomes. We need two additional predicates. 
+
+First, define:
+
+.. math::
+
+   \operatorname{RequestAccepted}(a,r)
+
+to mean that event :math:`a` accepts request :math:`r`, and define:
+
+.. math::
+
+   \operatorname{FinalOutcome}(a,r)
+
+to mean that event :math:`a` produces a terminal outcome for the same request. Our desired property is therefore 
+that a :math:`\operatorname{ValidExecution}` that has a :math:`\operatorname{RequestAccepted}` eventually has 
+a :math:`\operatorname{FinalOutcome}`. But how do we codify the notion of "eventually"? Here, the existential 
+operator can be used. 
+
+The liveness property we want is: 
+
+.. math::
+
+   \forall \pi,\alpha,r,k,\quad
+   \operatorname{ValidExecution}(\pi,\alpha)
+   \land
+   \operatorname{RequestAccepted}(\alpha(k),r)
+   \Longrightarrow
+
+.. math::
+
+   \exists j\geq k,\quad
+   \operatorname{FinalOutcome}(\alpha(j),r).
+
+As an exercise, try to codify the termination property. 
+
+
+Additional Exercises
+^^^^^^^^^^^^^^^^^^^^
 
 Classify each statement as safety or liveness, and describe (in informal language) how you might define them as 
-formal properties. What additional addumptions or qualifications might you need?
+formal properties. What additional assumptions or qualifications might you need?
 
 1. A failed reservation is never reported as completed.
 2. Every accepted request eventually produces either a completed, blocked, or failed response.
