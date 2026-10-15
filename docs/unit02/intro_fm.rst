@@ -610,7 +610,7 @@ Classify each statement and identify any missing qualification:
 3. If a reservation tool reports success, the returned reservation identifier appears in the trace.
 4. The agent performs at most ten model-decision steps.
 
-Possible discussion:
+*Discussion*:
 
 * Statement 1 is a safety property and could be expressed as a trace/response invariant.
 * Statement 2 is a liveness property and requires assumptions about model and tool responses.
