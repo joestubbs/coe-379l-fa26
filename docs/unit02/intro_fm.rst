@@ -596,12 +596,9 @@ The safety property can then be defined as follows:
 We are using one symbol we haven't introduces -- the "not" symbol (:math:`\neg`). This simply means that the 
 proposition is *not* true. 
 
-Preconditions, postconditions, and invariants describe where a property applies. Safety, liveness,
-and termination describe the kind of behavior being constrained. These classifications overlap rather
-than compete. An invariant commonly expresses a safety property.
 
-In-class Exercise
-^^^^^^^^^^^^^^^^^
+Exercises
+^^^^^^^^^
 
 Classify each statement and identify any missing qualification:
 
