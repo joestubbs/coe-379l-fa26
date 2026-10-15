@@ -16,6 +16,7 @@ in various theoretical fields, including mathematics, computer science, physics,
    :caption: Course Schedule:
 
    unit01/overview
+   unit02/overview
 
 
 
