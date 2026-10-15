@@ -600,14 +600,15 @@ proposition is *not* true.
 Exercises
 ^^^^^^^^^
 
-Classify each statement and identify any missing qualification:
+Classify each statement as safety or liveness, and describe (in informal language) how you might define them as 
+formal properties. What additional addumptions or qualifications might you need?
 
 1. A failed reservation is never reported as completed.
 2. Every accepted request eventually produces either a completed, blocked, or failed response.
 3. If a reservation tool reports success, the returned reservation identifier appears in the trace.
 4. The agent performs at most ten model-decision steps.
 
-*Discussion*:
+*Answers*:
 
 * Statement 1 is a safety property and could be expressed as a trace/response invariant.
 * Statement 2 is a liveness property and requires assumptions about model and tool responses.
