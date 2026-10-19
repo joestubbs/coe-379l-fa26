@@ -11,3 +11,4 @@ programming (variables and basic types, computable and noncomputable functions, 
    :maxdepth: 1
 
    intro_fm
+   props_as_types

@@ -674,17 +674,6 @@ formal properties. What additional assumptions or qualifications might you need?
 
 
 
-.. Technique Summary 
-.. ^^^^^^^^^^^^^^^^^
-
-.. We can summarize various techniques as follows: 
-
-.. * Type systems and type checking -- Reject programs or values that violate typing rules 
-.. * Contracts and runtime checking -- Check preconditions, postconditions, or invariants during execution
-.. * 
-
-
-
 
 
 
