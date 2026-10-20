@@ -324,7 +324,7 @@ this is probably obvious to you, but in Lean, we have to provide a proof.
 
 Once again, the proposition :math:`P ∧ Q \implies Q ∧ P` is a type in Lean. To construct a proof 
 we need to provide a term of that type. As an implication, by Curry-Howard again we need to define 
-a function from ``P ∧ Q \to Q ∧ P``. But again by Curry-Howard, an element of type ``P ∧ Q`` 
+a function from ``P ∧ Q → Q ∧ P``. But again by Curry-Howard, an element of type ``P ∧ Q`` 
 (or ``Q ∧ P``) is a tuple/product type. So, we need to define a function that takes a tuple ``(p, q)``
 where ``p`` is a proof of ``P`` and ``q`` is a proof of ``Q`` to a tuple of type ``Q x P``. 
 But that is easy! Just map ``(p, q)`` to the tuple ``(q, p)``. 
@@ -340,8 +340,122 @@ where ``h`` here represents the element ``P ∧ Q``, ``h.right`` represents ``Q`
 represents ``P``. But don't worry too much about the details of the syntax at this time. 
 
 
-What Lean Checks 
-----------------
+An Example with Disjunction (:math:`\lor`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Consider the following example involving disjunction: 
+
+.. code-block:: lean 
+
+    theorem third (P Q: Prop) : P → P ∨ Q := ... 
+
+Once again, to prove this theorem we must provide a term of type ``P → P ∨ Q``. By the Curry-Howard 
+correspondence, that implication corresponds to a function from ``P`` to ``P ∨ Q``. To define such 
+a function, it is enough to define how to map an individual ``p`` in ``P``. But a ``p`` of type 
+``P`` is just a proof of ``P``, and an element of type ``P ∨ Q`` is just a sum type (or union type), 
+that is, it is a proof of ``P`` *or a proof* of ``Q``. So, we can choose to map ``p`` to itself, 
+thought of as a union type. 
+
+.. code-block:: lean 
+
+    theorem third (P Q: Prop) : P → P ∨ Q :=
+        fun h => Or.inl h
+
+We're using a funny constructor, the ``Or.inl`` which essentially turns a proof of ``P`` into a 
+proof of ``P ∨ Q``. In fact, this is the type signature of ``Or.inl``: 
+
+
+.. code-block:: lean 
+
+    Or.inl {a b : Prop} (h : a) : a ∨ b
+
+But again, don't worry about understanding the details of the syntax at this time.     
+
+A Quick Introduction to Tactics 
+--------------------------------
+Defining these functions explicitly by hand to prove a theorem is called a *term proof* because 
+one exhibits a term inhabiting the type of the proposition directly. It is fine for these small 
+cases but it quickly becomes very difficult for most people. 
+
+Lean offers another method for developing proofs called *tactics*. 
+Tactics are interactive commands that automate and simplify the process of developing a proof. Instead 
+of giving the entire final term proof all at once, a tactic is a set of instructions that  
+allows you to guide Lean to building the term for you. 
+
+Proof States and Goals 
+^^^^^^^^^^^^^^^^^^^^^^
+The key idea with tactics is that Lean provides you with a *proof state*. You enter what is called 
+*tactic mode* using the ``by`` keyword after a theorem statement. 
+
+A proof state consists of two primary components: 
+
+* Local Context / Hypotheses: The variables and assumptions currently available to you. 
+  These are depicted above the ⊢ turnstile in the Lean Infoview.
+* Goal: The statement you are currently trying to prove. This is presented below the ⊢ turnstile.
+
+Each tactic you execute, if successful, modifies the proof state by adding or modifying hypotheses, 
+breaking down complex goals, or solving goals completely. 
+
+Let us illustrate with an initial example. We'll use our example from earlier, but this time 
+we'll give a tactic proof. 
+
+We start by entering the same code, but we add the ``by`` at the end to indicate we want to enter 
+tactic mode. 
+
+.. code-block:: lean 
+
+    theorem my_theorem (P : Prop) : P → P := by 
+
+At this point, the Infoview shows us the following 
+
+.. code-block:: lean 
+
+    1 goal
+    P : Prop
+    ⊢ P → P
+
+The ``P: Prop`` is our hypothesis, while the ``⊢ P → P`` is our goal. In other words, we get to 
+assume that ``P`` is a ``Prop`` and our goal is to prove ``P → P``. 
+
+The first tactic we can use is called the ``intro`` tactic. It introduces a hypothesis to the 
+proof state. We use it with the syntax ``into <h>`` where ``<h>`` is the name we want to give to 
+the introduced hypothesis. 
+
+We can use ``intro hp``  to introduce a new hypothesis, ``hp``:
+
+.. code-block:: lean 
+
+    theorem my_theorem (P : Prop) : P → P := by 
+        intro hp 
+
+At this point the Infoview shows: 
+
+.. code-block:: lean 
+
+    1 goal
+    P : Prop
+    hp : P
+    ⊢ P
+
+We have added the hypothesis ``hp: P`` to our proof state and the goal has become ``P``. 
+That is perfect because it matches our hypothesis exactly. 
+
+We can now finish the proof using a second tactic, the ``exact`` tactic. The syntax is 
+``exact <h>`` where ``<h>`` is some hypothesis that exactly matches a goal. Thus, we can use 
+``exact hp`` to close the goal and complete the proof: 
+
+.. code-block:: lean 
+
+    theorem my_theorem (P : Prop) : P → P := by 
+        intro hp 
+        exact hp 
+
+The Messages section of the Infoview shows: 
+
+.. code-block:: lean 
+
+    Goals accomplished!
+
 
 
 In-class Exercises 
