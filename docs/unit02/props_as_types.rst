@@ -32,9 +32,8 @@ By the end of this lecture, students should be able to:
 * interpret implication as a function type
 * interpret conjunction and disjunction as constructions requiring evidence
 * read simple Lean theorem declarations
-* use a few elementary tactics to construct proofs
-* explain the roles of tactics, elaboration, proof terms, and the Lean kernel
-* connect an invariant proof obligation with a future Lean theorem statement.
+* understand the difference between term proofs and tactic proofs to construct proofs
+* connect a safety property proof obligation with a Lean theorem statement.
 
 
 Types, terms, and type checking
@@ -458,9 +457,160 @@ The Messages section of the Infoview shows:
 
 
 
-In-class Exercises 
-------------------
-
-
-State Predicates and Invariants Revisited
+States, Transitions, and a Safety Property 
 ------------------------------------------
+
+Let us illustrate one slightly more involved example related to actual software 
+systems. We will consider the states associated with a tool call. For simplicity 
+we will assume that the states a tool call can go through are as follows:
+
+* Proposed -- The LLM has proposed a tool call with specific parameters. 
+* Rejected -- The application has rejected the specific tool call, and the LLM must start over with a new 
+  proposal. 
+* Validated -- The application has determined that a specific tool call should be allowed. 
+* Executed -- The application has executed a valid tool call. 
+
+We can model these four possible tool call states in Lean with what is called an *inductive type*. 
+Inductive types are the primary way of introducing new types in Lean. An ``inductive`` declaration introduces
+a new type by specifying its *constructors*. Constructors are the permitted ways to build
+values of the new type.
+
+For our valid tool call states, conceptually we want to use something like an enumeration. In Lean, we can proceed as follows: 
+
+.. code-block:: lean 
+
+    inductive ToolCallState where
+    | proposed
+    | validated
+    | rejected
+    | executed
+
+Again, you do not need to worry too much about the syntax at this type. 
+
+For now, just understand that the inductive type above defines a simple sum type (i.e., what we have referred to 
+as an enumeration in Python). The contructos appear after the ``|``, and in this case, they take no arguments and just directly 
+produce a value of type ``ToolCallState``. So, ``proposed``, 
+``validated``, ``rejected``, and ``executed`` are the possible values. These can be references using a dot notation. 
+For example, 
+
+.. code-block:: lean
+
+    ToolCallState.proposed : ToolCallState
+
+    ToolCallState.executed : ToolCallState
+
+
+Next we want to define the allowable transitions. We can think of transitions as corresponding 
+to actions (usually described with a verb) that our application will take and as transitioning a 
+tool call from one state to another. What actions can our application takes? We'll define just a 
+subset, for simplicity:
+
+* approve --- The application can approve a proposed tool call. This action moves the tool call from 
+  proposed to validated. 
+* deny ---  The application can deny a proposed tool call. This action moves the tool call from 
+  proposed to rejected.  
+* dispatch --- The application can dispatch an approved tool call. This action moves the tool call from 
+  validated to executed.
+
+Next we would like to define the valid transitions as a new type in Lean. How do we do this? 
+
+We can use ``inductive`` again, but this time it is more interesting because it does not simply enumerate transition values. 
+Instead, it defines a proposition indexed by the source and destination states. 
+That is, it takes two ``ToolCallState`` values --- the source state and destination state --- and produces a
+proposition:
+
+.. code-block:: lean 
+
+    inductive ValidTransition :
+        ToolCallState → ToolCallState → Prop where
+    | approve :
+        ValidTransition
+            ToolCallState.proposed
+            ToolCallState.validated
+    | deny :
+        ValidTransition
+            ToolCallState.proposed
+            ToolCallState.rejected
+    | dispatch :
+        ValidTransition
+            ToolCallState.validated
+            ToolCallState.executed    
+
+This proposition means:
+
+    “A one-step transition from ``source`` to ``destination`` is allowed.”
+
+Each of the three constructors provide evidence (i.e., a proof term) for exactly one of the allowed transitions.
+For example, the constructor
+
+.. code-block:: lean
+
+    ValidTransition.approve
+
+has type
+
+.. code-block:: lean
+
+    ValidTransition
+      ToolCallState.proposed
+      ToolCallState.validated
+
+Thus, ``ValidTransition.approve`` is evidence that a transition from ``proposed``
+to ``validated`` is allowed.
+
+Similarly:
+
+.. code-block:: lean
+
+    ValidTransition.deny
+
+is evidence that ``proposed → rejected`` is allowed, and
+
+.. code-block:: lean
+
+    ValidTransition.dispatch
+
+is evidence that ``validated → executed`` is allowed.
+
+No constructor produces evidence of
+
+.. code-block:: lean
+
+    ValidTransition
+      ToolCallState.proposed
+      ToolCallState.executed
+
+so the model does not permit a direct transition from ``proposed`` to ``executed``.
+
+How does this relate to Curry-Howard? The key point is that valid transition is represented by evidence (i.e., a proof term) 
+inhabiting the corresponding ValidTransition proposition.
+
+
+We can now state a safety property that we would like to prove, namely, that it is not possible to transition directly 
+from proposed to executed --- in order to transition to executed we must first transition to validated. 
+
+We can state it as follows: 
+
+.. code-block:: lean 
+
+    theorem no_direct_propose_execute :
+    ¬ ValidTransition
+      ToolCallState.proposed
+      ToolCallState.executed := by ... 
+
+In English, this says that there is not a valid transition from proposed to executed. We can prove it using a tactic 
+proof like so: 
+
+.. code-block:: lean 
+
+    theorem no_direct_propose_execute :
+    ¬ ValidTransition
+      ToolCallState.proposed
+      ToolCallState.executed := by
+      intro h
+      cases h
+
+When the parameter ``h`` is an inductive type, the ``cases h`` tactic splits the main goal across each of the constructors 
+of the inductive type. You will see more on tactics in the coming lectures. 
+
+
