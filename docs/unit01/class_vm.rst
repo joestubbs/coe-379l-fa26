@@ -77,6 +77,8 @@ You will see the extensions organized into listed of "Installed", "Recommended",
 search for extensions by typing into the search box. Install the Remote-SSH (from Microsoft) 
 extension. 
 
+.. _remote-ssh:
+
 Using Remote-SSH 
 ^^^^^^^^^^^^^^^^^
 To use Remote-SSH from within VSCode, do the following steps: 
