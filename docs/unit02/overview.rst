@@ -12,3 +12,4 @@ programming (variables and basic types, computable and noncomputable functions, 
 
    intro_fm
    props_as_types
+   lean
