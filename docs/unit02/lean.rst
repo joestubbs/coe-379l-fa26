@@ -118,7 +118,7 @@ stressed already in the previous units: the **Typing Judgement**
     t : T 
 
 which means that a **term** :code:`t` has **type** :code:`T` (sometimes we also say, interchangeably, that
-the trem :code:`t` *inhabits* the type :code:`T`). It is a very simple statement,
+the term :code:`t` *inhabits* the type :code:`T`). It is a very simple statement,
 but it has important consequences. In all the examples that follow, and in general
 in any code in Lean, you should be able to **always** put any concept in that form.
 If an idea or concept is not clear while learning Lean, try to ask yourself "what is
@@ -175,3 +175,32 @@ that concept, but the typing :code:`Prop : Type` and these mentioned differences
 interesting visual indication of the duality between **proving** theorems (happening in
 :code:`Prop`), and **computing** things (happening in :code:`Type`).
 
+Some Resources
+++++++++++++++
+
+The amount of resources available for learning Lean and for reference is large. And
+they can also be intimidating, due to the high level of abstraction. However, there are
+a couple that will be useful for our case, especially when searching the libraries.
+
+- `Mathlib Documentation <https://leanprover-community.github.io/mathlib4_docs/>`_:
+  Despite the name, this website also contains documentation about the base language,
+  including what is called the *Standard Library*. We suggest to use this website
+  by searching for the name of functions we are interested in the :command:`Search`
+  box at the top right.  For example, if we are interested in finding documentation 
+  for a function that adds all the numbers in a list, we can enter the term:
+  :code:`list sum`.
+
+  .. tip::
+
+    The search in this website does not accept natural language, and many times we'll
+    need to know the exact name of the functions. For a more relaxed experience, use
+    the next resource. However, it is still recommended to gain some familiarity with
+    this website, because it's the central hub for documentation of Lean and 
+    its libraries. Even third party libraries will usually have the same structure as
+    this website.
+
+- `LeanExplore <https://www.leanexplore.com>`_: This resources can take a natural 
+  language description of functions, theorems, definitions, etc., and it will provide
+  very good results. Think of it as a "Google" specifically for Lean. The results also
+  provide a direct link to the Mathlib documentation. For example, if we want to sum
+  elements of a list, we can enter :code:`sum elements of a list`. 
