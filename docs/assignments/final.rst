@@ -3,7 +3,7 @@ Final Project
 
 **Date Assigned:** Tuesday, Nov. 3, 2026
 
-**Due Date:** Monday, Dec. 10, 5 pm CST. (The day of the final exam for our class).
+**Due Date:** Thursday, Dec. 10, 5 pm CST. (The day of the final exam for our class).
 **Note:** The final version of the project is due at this time, but see below for 
 intermediate deadlines. 
 
@@ -141,7 +141,7 @@ Deadlines
 * Project Proposal --- Nov 17, 5 pm (in GitHub repository)
 * Live Presentation and Q&A --- Monday, December 7th (sign up for a time slot), or at an alternative 
   time on Thursday, December 3rd or Friday, December 4th. 
-* Final Project (committed in GitHub repository) --- Monday, Dec. 10, 5 pm CST
+* Final Project (committed in GitHub repository) --- Thursday, Dec. 10, 5 pm CST
 
 
 **Some Example Project Seed Ideas:**
