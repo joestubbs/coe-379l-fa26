@@ -58,8 +58,8 @@ Include the following in your proposal:
 * Products to be delivered --- what are the primary deliverables for the project? This is what we will be grading
 * Roles of each student in the group 
 
-The initial proposal will be worth 10 points. Groups that do not submit the proposals by the due 
-date will lose the 10 points and will still be required to get a proposal approved in order to 
+The initial proposal will be worth 8 points. Groups that do not submit the proposals by the due 
+date will lose the 8 points and will still be required to get a proposal approved in order to 
 submit the final project. Commit your initial proposal to your final project git repository.
 
 
@@ -110,8 +110,9 @@ The final project will be graded as follows:
 * 15 points --- Project Concept 
 
  1. Does the project concept involve relevant machine learning topics, ideas and/or technologies? 
- 2. Is the project useful and/or interesting?
- 3. Is the project unique?
+ 2. Does the project include a significant and meaningful formal methods component?
+ 3. Is the project useful and/or interesting?
+ 4. Is the project unique?
 
 * 30 points --- Project Products 
 
