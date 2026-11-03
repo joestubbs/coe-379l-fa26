@@ -33,6 +33,7 @@ in various theoretical fields, including mathematics, computer science, physics,
    :caption: Projects:
 
    assignments/midterm.rst
+   assignments/final.rst
 
 
 Additional Resources

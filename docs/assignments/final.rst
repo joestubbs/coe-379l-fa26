@@ -13,6 +13,9 @@ to you. You may incorporate any of the techniques or ideas presented in the lect
 also choose to study and incorporate a published paper, a new ML technology, a new formal 
 methods library, etc. Your project should have one significant AI/ML component and one FM component. 
 
+**Late Policy:**  This project is due during the final exam period for our class. As a result, 
+we will **not be able to accept late projects**. 
+
 **Group Assignment:**
 Students can work in groups of up to five on this assignment. The
 the roles and contributions of each student are required to be well defined. Additionally, 
@@ -30,8 +33,13 @@ AI you must:
 
 You **may not** use AI to write the final report.
 
+Project Components 
+------------------
+
+The project consists of the following components due at different times. 
+
 Initial Proposal
-----------------
+^^^^^^^^^^^^^^^^
 
 Begin by writing an initial proposal for your project. The initial proposal has a maximum of 
 2 pages in length, though you can include additional figures and/or data samples, etc., 
@@ -42,7 +50,11 @@ Include the following in your proposal:
 * Introduction and topic and/or problem statement --- A short introduction and summary of the 
   goals of the project
 * Data sources that will be used --- A reference to any datasets utilized in the project
-* List of high-level methods, techniques and/or technologies that you are considering using. If developing an application, include a high-level architecture diagram. 
+* List of high-level methods, techniques and/or technologies that you are considering using. If developing an application, 
+  include a high-level architecture diagram. 
+* In particular, you must include a description of the significant AI component and the significant Formal Methods component. 
+  Your Formal Methods component should include at least one formal proposition, in natural language, related to your project. 
+  For example, you can state a safety property, a liveness property, etc. 
 * Products to be delivered --- what are the primary deliverables for the project? This is what we will be grading
 * Roles of each student in the group 
 
@@ -52,10 +64,37 @@ submit the final project. Commit your initial proposal to your final project git
 
 
 Git Repository 
---------------
+^^^^^^^^^^^^^^
 The project products should be saved into an organized git repository, similar to the way 
 we have done the other projects. The initial proposal should be among the documents included 
-in your git repository, and it should be there by the initial proposal due date 
+in your git repository, and it should be there by the initial proposal due date. 
+
+Live Presentation and Question and Answer 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Your group will sign up for a 30 minute time slot on Monday, December 7th (or an alternative on Thursday, December 3rd or Friday, December 4th)
+to give a 10 minute presentation and answer questions about the course material and your project. All group members must participate 
+in the presentation and question answering. We will call on specific students to answer questions related to topics and ideas 
+presented during lecture that 
+
+Final Report and Video
+^^^^^^^^^^^^^^^^^^^^^^
+Submit a written report of your project. The following sections should be covered:
+
+1. Introduction and project statement 
+2. Data sources and technologies used 
+3. Methods employed
+4. Results 
+5. References 
+
+The final report should be a maximum of 10 pages. 
+
+Also, create a short video, **no more than 10 minutes**. The video should be a presentation 
+of your report and cover the primary aspects of your work. Record you video using Zoom (use the 
+"record to the cloud" option) and email a shareable link to the zoom recording to the instructors
+and TA. 
+
+
 
 Grading
 -------
@@ -63,30 +102,36 @@ The final project will be graded as follows:
 
 * 2 points --- Group sign up by deadline (Nov 10) Sign up Sheet (no partial credit for late sign ups)
 
-* 10 points --- Proposal (due Nov 17)
+* 8 points --- Proposal (due Nov 17)
 
    1. First draft submitted on time 
    2. Any required updates made within 1 week. 
 
-* 20 points --- Project Concept 
+* 15 points --- Project Concept 
 
  1. Does the project concept involve relevant machine learning topics, ideas and/or technologies? 
  2. Is the project useful and/or interesting?
  3. Is the project unique?
 
-* 33 points --- Project Products 
+* 30 points --- Project Products 
 
  1. Do the products achieve the described goals?
  2. Are the products available (e.g., in a code repository)?
  3. Are the products well-documented?
 
-* 35 points --- report/video and live Presentation and Q&A
+* 35 points --- live Presentation and Q&A
+
+ 1. Is the presentation accurate, comprehensive, and understandable? 
+ 2. Do all students participate meaningfully in the presentation? 
+ 3. Do the answers to the questions demonstrate comprehension of the course material? 
+ 4. When answering questions, are the students able to apply the course material to their project in a meaningful way? 
+
+* 10 points --- Written report and video
 
  1. Does the the final report/video cover all sections?
  2. Is the writing/video easy to follow? (i.e., there is a logical progression of the presentation, 
     important details are not missing but we are not drowned in minutiae either, etc.)
  3. Are all sources referenced?
-
 
 Deadlines
 ----------
