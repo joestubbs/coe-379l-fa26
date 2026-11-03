@@ -1,7 +1,7 @@
 Final Project 
 =============
 
-**Date Assigned:** Tuesday, Nov. 2, 2026
+**Date Assigned:** Tuesday, Nov. 3, 2026
 
 **Due Date:** Monday, Dec. 10, 5 pm CST. (The day of the final exam for our class).
 **Note:** The final version of the project is due at this time, but see below for 
