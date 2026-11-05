@@ -26,6 +26,7 @@ in various theoretical fields, including mathematics, computer science, physics,
 
    readings/datascience.rst
    readings/using_llms_types_and_structured_responses.rst 
+   readings/lean.rst
 
 
 .. toctree::
