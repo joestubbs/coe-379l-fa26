@@ -467,22 +467,6 @@ Then, on the Python side, we use subprocess to invoke the Lean program. For exam
 A key point is that any kind of failure between Python and Lean, including parsing errors, failed processes, 
 timeouts, etc., all result in the proposal being rejected.
 
-Extensions for FormalLitQA 
----------------------------
-
-Recall that the manifest is the collection of all chunks and relations. The manifest can be implemented as a Python Pydantic 
-type like so: 
-
-.. code-block:: python 
-
-    class Manifest(BaseModel):
-        corpus_id: str
-        generated_at_utc: str
-        papers: list[Paper]
-        chunks: list[Chunk]
-        relations: list[Relation]
-
-
 Additional Resources 
 ---------------------
 

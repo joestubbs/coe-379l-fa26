@@ -11,3 +11,4 @@ to propose an action or answer, and a formal methods component will validate cer
    :maxdepth: 1
 
    intro_neurosymbolic
+..    verified_tool_calling
