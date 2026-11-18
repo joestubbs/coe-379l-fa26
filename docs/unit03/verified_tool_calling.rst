@@ -480,11 +480,39 @@ what is sometimes called *correct by construction*.
 How is it working? Remember that ``decide`` is a program which converts a "decidable proposition" into a boolean, that is, 
 something that can be computed. Lean's ``Decidable`` mechanism can convert 
 
+How do we deal with JSON? With ``verifyClaim`` in place, our ``verify`` function becomes a thin wrapper that simply 
+has to handle parsing the JSON. This is nearly identical to the implementation of ``verify`` we implemented for 
+the Lab Agent system. 
+
+.. code-block:: lean 
+
+  def verify (m : Manifest) (x : Json) : Bool :=
+    match (fromJson? x : Except String Claim) with
+    | .ok c => verifyClaim m c
+    | .error _ => false
+
+
 Verification 
 ^^^^^^^^^^^^^^
-How do we deal with JSON? With the specification above in place, 
 
-So, for example, suppose we have the following simple manifest: 
+As we did in the Lab Agent example, we can proceed by giving two theorems. The first works at the ``Claim`` 
+level and it very similar to ``checkProposal_correct``: 
+
+.. code-block:: lean 
+
+  theorem verifyClaim_correct (m : Manifest) (c : Claim) :
+      verifyClaim m c = true ↔ validClaim m c
+
+while the second one works at the level of JSON: 
+
+.. code-block:: lean 
+
+  theorem verifyIsCorrect (m : Manifest) (x : Json) :
+    verify m x = true ↔ ∃ c : Claim, fromJson? x = .ok c ∧ validClaim m c
+
+
+We can also look at some examples. 
+Suppose we have the following simple manifest: 
 
 .. code-block:: lean 
 
@@ -496,3 +524,27 @@ So, for example, suppose we have the following simple manifest:
     ]
     proves := [(17, 92)]
   }
+
+Consider the following claims: 
+
+.. code-block:: lean
+
+  def goodClaim : Claim := {
+    claimId := 1
+    claimType := .ProvedResult
+    evidence := [17, 92]
+  }
+
+  def badClaim : Claim := {
+    claimId := 2
+    claimType := .ProvedResult
+    evidence := [17, 105]
+  }
+
+
+Convince yourself of the correctness of the following: 
+
+.. code-block:: lean 
+
+  #eval verify sampleManifest (toJson goodClaim)  -- true
+  #eval verify sampleManifest (toJson badClaim)   -- false
