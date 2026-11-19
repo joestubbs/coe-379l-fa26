@@ -72,9 +72,23 @@ two constructors:
         (available : Bool)
     deriving Repr, DecidableEq    
 
+Here we are using ``inductive`` to define a sum type of product types. The ``ToolCall`` type itself is a sum type over 
+the variants ``authorizationChecked`` and ``resourceStatus``, while each of those are in turn product types with required 
+data (term) to construct them. 
+
 The ``authorizationChecked`` variant comes with the data ``userId``, indicating which user was checked, and ``authorized``, 
 indicating whether the check passed, while ``resourceStatus`` includes the ``resourceId`` tht was checked, the ``slot``
 that was checked, and whether it was ``available``. 
+
+For example, we can construct a tool call by specifying the variant and then the required additional fields, like so: 
+
+.. code-block:: lean 
+
+    def example_toolcall : ToolCall := .resourceStatus "uv-1" "tuesday-10am" true
+
+Another option would be to use ``structure`` to define ``authorizationChecked`` and ``resourceStatus`` as standalone types. 
+Should we have done that? It really depends --- do we want the ability to construct those outside of a ``ToolCall`` object? 
+If not, then the approach above is preferred. 
 
 We can then model a trusted context as a product of these: 
 
