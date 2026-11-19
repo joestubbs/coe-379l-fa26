@@ -58,9 +58,10 @@ of a few components. The first will be the trusted request object, which we defi
     userId : String
     deriving Repr    
 
-The ``userId`` field represents the authenticated user, e.g., ``jstubbs``. 
+The ``userId`` field represents the authenticated user, e.g., ``jstubbs``. We could certainly have additional fields 
+in the trusted request, but this implementation is already enough for the rules above. 
 
-Next we define the collection of prior tool calls. For simplicity, we'll assume a prior two call is just one of the 
+Next we define the collection of prior tool calls. For simplicity, we'll assume a prior tool call is just one of the 
 ``check_authorization`` and the ``resource_status`` tools (there are other tools in the system, but these are the only 
 ones we need to recognize to implement the rules above). Thus, a prior tool call will be an inductive type with just 
 two constructors: 
@@ -134,7 +135,21 @@ Thus, we might have a context like the following:
     ]
   }
 
-This says that the user ``jstubbs`` is authenticated and there have been two tool calls previously. 
+and we might have a proposal like: 
+
+.. code-block:: lean 
+
+  def exampleProposal : Proposal := {
+    userId := "jstubbs"
+    resourceId := "uv-1"
+    slot := "tuesday-10am"
+  }
+
+Do you think ``exampleProposal`` should be accepted according to the rules? 
+
+If we assume the ``sampleContext``, then yes because this says that there were tool calls indicating that the 
+user ``jstubbs`` is authenticated and the status of the ``uv-1`` resource is available at 10am on Tuesday 
+(note that these are across two tool calls). 
 
 Specification 
 ^^^^^^^^^^^^^
