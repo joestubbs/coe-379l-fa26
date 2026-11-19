@@ -8,6 +8,9 @@ we will expand on some of general-purpose infrastructure needed to integrate Pyt
 
 By the end of this lecture, students should be able to: 
 
+* Understand the high-level approach to using the verified checker pattern for agentic tool calling applications. 
+* Implement the verified checker for a subset of the functionality in the Lab Agent Software setting. 
+* Extend the initial Lean types, specifications, and theorems for FormalLitQA to provide additional guarantees. 
 
 Verified Tool Calling 
 ---------------------
@@ -23,7 +26,7 @@ associated with the proposal. Rules that we would like the system to implement i
   proposed reservation time must be established based on the ``available`` field from a ``resource-status`` call. 
 
 Our approach will be very similar to the one we used for FormalLitQA. We will implement a verified kernel in Lean, 
-and our Python code will invoke it using 
+and our Python code will invoke it at runtime. 
 
 Verification in the Lab Agent: An Initial Implementation 
 --------------------------------------------------------
